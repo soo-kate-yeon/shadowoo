@@ -19,19 +19,28 @@ export default function StudyPage() {
     const [currentTime, setCurrentTime] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Initialize or load session
     useEffect(() => {
+        if (!isMounted) return;
+
         const existingSession = sessions.find(s => s.videoId === videoId);
 
         if (existingSession) {
+            console.log('Found existing session:', existingSession);
             setCurrentSession(existingSession.id);
             setIsLoading(false);
         } else {
             // Fetch transcript and create new session
+            console.log('Creating new session for:', videoId);
             fetchTranscriptAndCreateSession();
         }
-    }, [videoId]);
+    }, [videoId, isMounted, sessions.length]); // Added sessions.length to retry if sessions load late
 
     const fetchTranscriptAndCreateSession = async () => {
         try {
@@ -43,9 +52,11 @@ export default function StudyPage() {
             }
 
             const sentences = parseTranscriptToSentences(data.transcript);
+            console.log('Parsed sentences:', sentences.length);
             createSession(videoId, `Video ${videoId}`, sentences);
             setIsLoading(false);
         } catch (err) {
+            console.error('Error fetching transcript:', err);
             setError(err instanceof Error ? err.message : '오류가 발생했습니다');
             setIsLoading(false);
         }
@@ -53,9 +64,12 @@ export default function StudyPage() {
 
     const handlePhaseChange = (phase: 'blind' | 'script' | 'shadowing') => {
         if (currentSession) {
+            console.log('Changing phase to:', phase);
             updateSessionPhase(currentSession.id, phase);
         }
     };
+
+    if (!isMounted) return null;
 
     if (isLoading) {
         return (
@@ -89,6 +103,9 @@ export default function StudyPage() {
     if (!currentSession) {
         return null;
     }
+
+    console.log('Render - Current Phase:', currentSession.currentPhase);
+    console.log('Render - Sentences:', currentSession.sentences?.length);
 
     return (
         <div className="min-h-screen bg-gray-50">

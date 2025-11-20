@@ -11,6 +11,9 @@ export function parseTranscriptToSentences(transcriptItems: TranscriptItem[]): S
     let currentEndTime = 0;
 
     transcriptItems.forEach((item, index) => {
+        // Skip items with no text
+        if (!item.text) return;
+
         if (currentSentence === '') {
             currentStartTime = item.start;
         }
