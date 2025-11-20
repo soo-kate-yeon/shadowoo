@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import YouTubePlayer, { playerControls } from '@/components/YouTubePlayer';
 import SentenceItem from '@/components/SentenceItem';
+import ShadowingMode from '@/components/ShadowingMode';
 import { useStudyStore } from '@/store/useStudyStore';
 import { parseTranscriptToSentences } from '@/lib/transcript-parser';
 import { Sentence } from '@/types';
@@ -163,7 +164,7 @@ export default function StudyPage() {
                         )}
 
                         {currentSession.currentPhase === 'shadowing' && (
-                            <ShadowingPanel
+                            <ShadowingMode
                                 sentences={currentSession.sentences}
                                 player={player}
                             />
@@ -215,53 +216,6 @@ function ScriptPanel({
                     onClick={() => handleSentenceClick(sentence)}
                 />
             ))}
-        </div>
-    );
-}
-
-// Shadowing Panel Component (placeholder)
-function ShadowingPanel({
-    sentences,
-    player,
-}: {
-    sentences: Sentence[];
-    player: YT.Player | null;
-}) {
-    return (
-        <div className="space-y-4">
-            <div className="flex gap-2 mb-6">
-                <button className="px-4 py-2 bg-gray-200 rounded-lg text-sm font-medium">
-                    1문장씩
-                </button>
-                <button className="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium">
-                    1문단씩
-                </button>
-                <button className="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium">
-                    전체
-                </button>
-            </div>
-
-            <div className="space-y-3">
-                {sentences.slice(0, 3).map((sentence, index) => (
-                    <div key={sentence.id} className="p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-start gap-3">
-                            <span className="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm">
-                                {index + 1}
-                            </span>
-                            <p className="text-gray-900">{sentence.text}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className="mt-6 flex justify-between">
-                <button className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium">
-                    이전 문장
-                </button>
-                <button className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium">
-                    다음 문장
-                </button>
-            </div>
         </div>
     );
 }
