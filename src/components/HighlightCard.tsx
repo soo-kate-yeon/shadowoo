@@ -1,37 +1,39 @@
 import React from 'react';
-import { Card } from '@/components/ui/card';
 
 interface HighlightCardProps {
-    thumbnailUrl?: string;
-    videoTitle: string;
     highlightedSentence: string;
     userCaption?: string;
     onClick?: () => void;
 }
 
 export default function HighlightCard({
-    thumbnailUrl,
-    videoTitle,
     highlightedSentence,
     userCaption,
     onClick,
 }: HighlightCardProps) {
     return (
-        <Card
-            onClick={onClick}
-            className="flex gap-3 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-        >
-            <div className="w-1 bg-[#fcdb4b] rounded-full flex-shrink-0"></div>
-            <div className="flex-1 space-y-2">
-                <p className="text-body-emphasized text-gray-900 line-clamp-3">
+        <div onClick={onClick} className="flex flex-col gap-3 cursor-pointer">
+            {/* Highlight Text */}
+            <div className="flex gap-3 items-start h-auto">
+                <div className="w-1 bg-[#fcdb4b] shrink-0 rounded-full self-stretch min-h-[24px]" />
+                <p className="text-base font-normal text-black leading-snug pt-0.5">
                     {highlightedSentence}
                 </p>
-                {userCaption && (
-                    <p className="text-caption text-gray-500 border-l-2 border-gray-200 pl-3 line-clamp-2">
+            </div>
+
+            {/* User Note (if exists) */}
+            {userCaption && (
+                <div className="h-[18px] relative w-full pl-[26px]">
+                    <div className="absolute left-[16px] top-0 w-[18px] h-[18px] flex items-center justify-center -ml-4">
+                        <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 18 18">
+                            <path d="M1 1 L1 10 L10 10" stroke="#D8D8D8" strokeWidth="2" strokeLinecap="square" />
+                        </svg>
+                    </div>
+                    <p className="text-base font-normal text-[#767676] leading-tight font-['SF_Pro_Display']">
                         {userCaption}
                     </p>
-                )}
-            </div>
-        </Card>
+                </div>
+            )}
+        </div>
     );
 }

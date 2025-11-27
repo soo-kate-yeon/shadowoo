@@ -1,12 +1,11 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 interface VideoCardProps {
     thumbnailUrl?: string;
     title: string;
     duration: string;
     description: string;
+    sentenceCount?: number;
     onClick?: () => void;
 }
 
@@ -15,38 +14,45 @@ export default function VideoCard({
     title,
     duration,
     description,
+    sentenceCount = 275, // Default mock value if not provided
     onClick,
 }: VideoCardProps) {
     return (
-        <Card
+        <div
             onClick={onClick}
-            className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer border-0 shadow-sm h-full flex flex-col"
+            className="flex flex-col gap-4 group cursor-pointer"
         >
-            <div className="aspect-video bg-gray-200 flex items-center justify-center relative overflow-hidden rounded-t-xl">
+            {/* Thumbnail Container */}
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-neutral-200">
                 {thumbnailUrl ? (
-                    <img src={thumbnailUrl} alt={title} className="w-full h-full object-cover" />
+                    <img
+                        src={thumbnailUrl}
+                        alt={title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
                 ) : (
-                    <span className="text-caption text-gray-400">Video Thumbnail</span>
+                    <div className="w-full h-full flex items-center justify-center text-neutral-400">No Image</div>
                 )}
-                <Badge className="absolute bottom-2 right-2 bg-black/70 text-white hover:bg-black/70 backdrop-blur-sm text-[10px] px-1.5 py-0.5 h-auto">
-                    {duration}
-                </Badge>
+                {/* Duration Badge */}
+                <div className="absolute bottom-3 right-3 bg-black/35 backdrop-blur-sm px-2 py-1.5 rounded-lg">
+                    <span className="text-white text-sm font-medium">{duration}</span>
+                </div>
             </div>
-            <CardContent className="p-3 flex flex-col gap-1 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-item-emphasized text-gray-900 line-clamp-2 leading-tight">
+
+            {/* Content */}
+            <div className="flex flex-col gap-1">
+                <div className="flex items-end justify-between gap-2">
+                    <h3 className="text-lg font-semibold text-black tracking-[0.5px] line-clamp-1 flex-1">
                         {title}
                     </h3>
+                    <span className="text-lg font-medium text-black shrink-0">
+                        {sentenceCount}문장 · {duration.split(':')[0]}분
+                    </span>
                 </div>
-                <div className="flex items-center gap-1 text-caption text-gray-500">
-                    <span>275문장</span>
-                    <span>·</span>
-                    <span>5분</span>
-                </div>
-                <p className="text-body text-gray-600 line-clamp-2 mt-1 text-xs">
+                <p className="text-sm font-medium text-[#767676] leading-tight line-clamp-2">
                     {description}
                 </p>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

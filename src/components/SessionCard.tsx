@@ -1,7 +1,4 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 interface SessionCardProps {
     thumbnailUrl?: string;
@@ -21,50 +18,54 @@ export default function SessionCard({
     onClick,
 }: SessionCardProps) {
     return (
-        <Card className="overflow-hidden flex flex-row h-32">
-            <div className="w-40 bg-gray-200 flex-shrink-0 relative">
+        <div className="flex items-start gap-4 w-full">
+            {/* Thumbnail */}
+            <div className="w-[191px] h-[139px] rounded-xl overflow-hidden shrink-0 relative bg-neutral-200">
                 {thumbnailUrl ? (
-                    <img src={thumbnailUrl} alt={title} className="w-full h-full object-cover" />
+                    <img
+                        src={thumbnailUrl}
+                        alt={title}
+                        className="w-full h-full object-cover"
+                    />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-caption">
-                        Thumbnail
-                    </div>
+                    <div className="w-full h-full flex items-center justify-center text-neutral-400">No Image</div>
                 )}
-                <Badge className="absolute bottom-2 right-2 bg-black/80 text-white hover:bg-black/80">
-                    {timeLeft}
-                </Badge>
+                <div className="absolute bottom-2 right-2 bg-black/35 backdrop-blur-sm px-2 py-1.5 rounded-md">
+                    <span className="text-white text-xs font-medium font-['SF_Pro_Display']">{timeLeft}</span>
+                </div>
             </div>
 
-            <CardContent className="p-4 flex flex-col flex-1 justify-between">
-                <div>
-                    <h3 className="text-item-emphasized text-gray-900 line-clamp-2 mb-1">
+            {/* Info Column */}
+            <div className="flex flex-col gap-4 flex-1 min-w-0">
+                {/* Title & Meta */}
+                <div className="flex flex-col items-start w-full">
+                    <h3 className="text-lg font-semibold text-black line-clamp-2 leading-tight mb-1 font-['SF_Pro_Display']">
                         {title}
                     </h3>
-                    <p className="text-caption text-gray-500">
-                        {totalSentences}문장 · {timeLeft}
+                    <p className="text-lg font-medium text-[#767676]">
+                        {totalSentences}문장 · {timeLeft.split(':')[0]}분
                     </p>
                 </div>
 
-                <div className="w-full">
-                    <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
+                {/* Progress */}
+                <div className="flex items-center gap-2 w-full">
+                    <div className="w-full h-1 bg-[#d8d8d8] rounded-full overflow-hidden">
                         <div
-                            className="bg-green-500 h-1.5 rounded-full transition-all"
+                            className="h-full bg-[#a5d592] rounded-full"
                             style={{ width: `${progress}%` }}
-                        ></div>
+                        />
                     </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-caption text-gray-500">{progress}%</span>
-                        <Button
-                            onClick={onClick}
-                            variant="secondary"
-                            size="sm"
-                            className="text-caption h-7"
-                        >
-                            계속 학습하기
-                        </Button>
-                    </div>
+                    <span className="text-sm font-medium text-black">{progress}%</span>
                 </div>
-            </CardContent>
-        </Card>
+
+                {/* Action Button */}
+                <button
+                    onClick={onClick}
+                    className="bg-neutral-200 hover:bg-neutral-300 transition-colors rounded-xl py-2 px-2.5 flex items-center justify-center w-fit"
+                >
+                    <span className="text-sm font-medium text-[#3f3f3f]">계속 학습하기</span>
+                </button>
+            </div>
+        </div>
     );
 }
