@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Sentence } from '@/types';
+import YouTubePlayer from '@/components/YouTubePlayer';
 
 export default function SessionPage() {
     const params = useParams();
@@ -73,27 +74,52 @@ export default function SessionPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            <header className="h-16 border-b flex items-center px-6 justify-between">
-                <h1 className="font-semibold text-lg">{video?.title || 'Unknown Video'}</h1>
+        <div className="h-screen bg-background flex flex-col overflow-hidden">
+            <header className="h-16 border-b flex items-center px-6 justify-between shrink-0 bg-white z-10">
+                <h1 className="font-semibold text-lg truncate max-w-[600px]">{video?.title || 'Unknown Video'}</h1>
                 <Button variant="ghost" onClick={() => router.push('/home')}>Exit</Button>
             </header>
-            <main className="flex-1 p-6 flex gap-6">
-                {/* Video Player Placeholder */}
-                <div className="flex-1 bg-black rounded-xl flex items-center justify-center text-white">
-                    Video Player ({videoId})
+
+            <main className="flex-1 flex overflow-hidden">
+                {/* Left Column: Video Player */}
+                <div className="flex-1 bg-black flex items-center justify-center relative">
+                    <div className="w-full max-w-[1200px] aspect-video">
+                        <YouTubePlayer
+                            videoId={videoId}
+                            className="w-full h-full"
+                            onTimeUpdate={(time) => {
+                                // TODO: Sync with transcript
+                                console.log('Time update:', time);
+                            }}
+                        />
+                    </div>
                 </div>
 
-                {/* Transcript / Controls Placeholder */}
-                <div className="w-[400px] bg-secondary-100 rounded-xl p-4 overflow-y-auto">
-                    <h2 className="font-semibold mb-4">Transcript ({sentences.length} sentences)</h2>
-                    <div className="flex flex-col gap-2">
+                {/* Right Column: Transcript */}
+                <div className="w-[400px] bg-white border-l flex flex-col shrink-0">
+                    <div className="p-4 border-b shrink-0 bg-white">
+                        <h2 className="font-semibold text-lg">Transcript</h2>
+                        <p className="text-sm text-muted-foreground">{sentences.length} sentences</p>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {sentences.map((sentence, idx) => (
-                            <div key={sentence.id} className="p-2 hover:bg-white rounded-lg cursor-pointer transition-colors">
-                                <span className="text-xs text-gray-500 font-mono mr-2">
-                                    {idx + 1}.
-                                </span>
-                                {sentence.text}
+                            <div
+                                key={sentence.id}
+                                className="p-3 hover:bg-secondary-100 rounded-xl cursor-pointer transition-colors group"
+                                onClick={() => {
+                                    // TODO: Seek video to sentence start
+                                    console.log('Jump to:', sentence.startTime);
+                                }}
+                            >
+                                <div className="flex gap-3">
+                                    <span className="text-xs text-muted-foreground font-mono mt-1 shrink-0 w-6">
+                                        {idx + 1}
+                                    </span>
+                                    <p className="text-base leading-relaxed text-neutral-800 group-hover:text-black">
+                                        {sentence.text}
+                                    </p>
+                                </div>
                             </div>
                         ))}
                     </div>
