@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,10 @@ export default function SessionPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [sentences, setSentences] = useState<Sentence[]>([]);
+
+    const [player, setPlayer] = useState<YT.Player | null>(null);
+    const [currentTime, setCurrentTime] = useState(0);
+    const activeSentenceRef = useRef<HTMLDivElement>(null);
 
     const addSession = useStore((state) => state.addSession);
     const getVideo = useStore((state) => state.getVideo);
@@ -60,6 +64,36 @@ export default function SessionPage() {
         fetchTranscript();
     }, [videoId, addSession, video]);
 
+    const handlePlayerReady = (playerInstance: YT.Player) => {
+        setPlayer(playerInstance);
+    };
+
+    const handleTimeUpdate = (time: number) => {
+        setCurrentTime(time);
+    };
+
+    const handleSentenceClick = (startTime: number) => {
+        if (player) {
+            player.seekTo(startTime, true);
+            player.playVideo(); // Optional: auto-play after seek
+        }
+    };
+
+    // Find active sentence
+    const activeSentenceIndex = sentences.findIndex(
+        (s) => currentTime >= s.startTime && currentTime < s.endTime
+    );
+
+    // Auto-scroll to active sentence
+    useEffect(() => {
+        if (activeSentenceRef.current) {
+            activeSentenceRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        }
+    }, [activeSentenceIndex]);
+
     if (loading) {
         return <div className="flex items-center justify-center h-screen">Loading Session...</div>;
     }
@@ -87,10 +121,8 @@ export default function SessionPage() {
                         <YouTubePlayer
                             videoId={videoId}
                             className="w-full h-full"
-                            onTimeUpdate={(time) => {
-                                // TODO: Sync with transcript
-                                console.log('Time update:', time);
-                            }}
+                            onReady={handlePlayerReady}
+                            onTimeUpdate={handleTimeUpdate}
                         />
                     </div>
                 </div>
@@ -103,25 +135,38 @@ export default function SessionPage() {
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                        {sentences.map((sentence, idx) => (
-                            <div
-                                key={sentence.id}
-                                className="p-3 hover:bg-secondary-100 rounded-xl cursor-pointer transition-colors group"
-                                onClick={() => {
-                                    // TODO: Seek video to sentence start
-                                    console.log('Jump to:', sentence.startTime);
-                                }}
-                            >
-                                <div className="flex gap-3">
-                                    <span className="text-xs text-muted-foreground font-mono mt-1 shrink-0 w-6">
-                                        {idx + 1}
-                                    </span>
-                                    <p className="text-base leading-relaxed text-neutral-800 group-hover:text-black">
-                                        {sentence.text}
-                                    </p>
+                        {sentences.map((sentence, idx) => {
+                            const isActive = idx === activeSentenceIndex;
+                            return (
+                                <div
+                                    key={sentence.id}
+                                    ref={isActive ? activeSentenceRef : null}
+                                    className={`
+                                        p-3 rounded-xl cursor-pointer transition-all duration-200 group
+                                        ${isActive
+                                            ? 'bg-primary-100 ring-1 ring-primary-500 shadow-sm'
+                                            : 'hover:bg-secondary-100'
+                                        }
+                                    `}
+                                    onClick={() => handleSentenceClick(sentence.startTime)}
+                                >
+                                    <div className="flex gap-3">
+                                        <span className={`
+                                            text-xs font-mono mt-1 shrink-0 w-6 transition-colors
+                                            ${isActive ? 'text-primary-700 font-bold' : 'text-muted-foreground'}
+                                        `}>
+                                            {idx + 1}
+                                        </span>
+                                        <p className={`
+                                            text-base leading-relaxed transition-colors
+                                            ${isActive ? 'text-black font-medium' : 'text-neutral-800 group-hover:text-black'}
+                                        `}>
+                                            {sentence.text}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </main>
