@@ -1,7 +1,10 @@
+
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Button } from "../../../ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../ui/card"
+import { Input } from "../../../ui/input"
+import LoginButton from "@/components/auth/LoginButton"
+import AuthForm from "@/components/auth/AuthForm"
 
 export default function SignUpPage() {
     return (
@@ -51,21 +54,28 @@ export default function SignUpPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4 pb-12 px-8">
-                    <Link href="/home" className="w-full">
-                        <Button variant="social" size="social" className="bg-[#fee500] text-[#3c1e1e] hover:bg-[#fdd835]">
-                            카카오로 시작하기
-                        </Button>
-                    </Link>
-                    <Link href="/home" className="w-full">
-                        <Button variant="social" size="social" className="bg-[#03c75a] text-white hover:bg-[#02b351]">
-                            네이버로 시작하기
-                        </Button>
-                    </Link>
-                    <Link href="/home" className="w-full">
-                        <Button variant="social" size="social" className="bg-white text-neutral-900 border border-neutral-200 hover:bg-neutral-50">
+                    <div className="w-full space-y-4">
+                        <AuthForm mode="signup" />
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-surface px-2 text-muted-foreground">
+                                    또는
+                                </span>
+                            </div>
+                        </div>
+                        <LoginButton provider="google" variant="social" size="social" className="w-full bg-white text-neutral-900 border border-neutral-200 hover:bg-neutral-50">
                             구글로 시작하기
-                        </Button>
-                    </Link>
+                        </LoginButton>
+                        <div className="text-center text-sm">
+                            이미 계정이 있으신가요?{" "}
+                            <Link href="/login" className="underline">
+                                로그인
+                            </Link>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>

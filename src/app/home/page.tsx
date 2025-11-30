@@ -6,9 +6,9 @@ import Link from 'next/link';
 import SessionCard from '@/components/SessionCard';
 import VideoCard from '@/components/VideoCard';
 import HighlightCard from '@/components/HighlightCard';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '../../../ui/button';
+import { Input } from '../../../ui/input';
+import UserMenu from '@/components/auth/UserMenu';
 import { useStore } from '@/lib/store';
 import { extractVideoId } from '@/lib/transcript-parser';
 
@@ -59,15 +59,7 @@ export default function HomePage() {
                     <span className="text-title-panel text-neutral-900">ShadowingNinja</span>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <button className="text-body-large text-neutral-900 font-medium hover:text-neutral-700">
-                        로그아웃
-                    </button>
-                    <Avatar className="w-10 h-10 border-2 border-white cursor-pointer">
-                        <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
-                        <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                </div>
+                <UserMenu />
             </header>
 
             <main className="flex-1 max-w-[1920px] w-full mx-auto p-8 flex flex-col gap-6 h-[calc(100vh-80px)] overflow-hidden">
