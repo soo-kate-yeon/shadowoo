@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
             console.error('Transcript not available:', transcriptError);
             return NextResponse.json({
                 success: true,
-                transcript: [], // Return empty if no transcript found
+                sentences: [], // Return empty if no transcript found
                 message: 'No transcript available for this video'
             });
         }

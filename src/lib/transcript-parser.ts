@@ -17,8 +17,8 @@ export function parseTranscriptToSentences(transcriptItems: TranscriptItem[]): S
     let lastItemEndTime = 0;
 
     // Configuration
-    const MAX_SENTENCE_LENGTH = 150; // characters
-    const MAX_WORD_COUNT = 15; // words
+    const MAX_SENTENCE_LENGTH = 300; // characters (Increased 2x)
+    const MAX_WORD_COUNT = 40; // words (Increased to match longer sentences)
     const TIME_GAP_THRESHOLD = 2.0; // seconds
 
     // Debug logging
@@ -79,22 +79,19 @@ export function parseTranscriptToSentences(transcriptItems: TranscriptItem[]): S
         // Check various sentence-ending conditions
         const text = item.text.trim();
         const primaryPunctuation = /[.!?]$/.test(text);
-        const secondaryPunctuation = /[,;:]$/.test(text);
+        // Secondary punctuation check removed as requested
         const isLastItem = index === transcriptItems.length - 1;
         const currentLength = currentSentence.trim().length;
         const currentWordCount = currentSentence.trim().split(/\s+/).length;
 
         // Track punctuation stats
-        if (primaryPunctuation || secondaryPunctuation) punctuationCount++;
+        if (primaryPunctuation) punctuationCount++;
         else noPunctuationCount++;
 
         // Decision tree for sentence breaks
         if (primaryPunctuation) {
             // Always break on . ! ?
             createSentence('primary punctuation', index);
-        } else if (secondaryPunctuation && currentLength > 50) {
-            // Break on , ; : if sentence is getting long
-            createSentence('secondary punctuation', index);
         } else if (currentLength >= MAX_SENTENCE_LENGTH) {
             // Force break if too long
             createSentence('max length', index);

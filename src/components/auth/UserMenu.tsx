@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../../../ui/avatar';
 import { useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function UserMenu() {
     const [user, setUser] = useState<User | null>(null);
@@ -53,7 +54,18 @@ export default function UserMenu() {
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer w-full">
+                        프로필
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/pricing" className="cursor-pointer w-full">
+                        요금제 업그레이드
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer">
                     로그아웃
                 </DropdownMenuItem>
             </DropdownMenuContent>

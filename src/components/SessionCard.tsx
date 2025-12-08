@@ -4,7 +4,6 @@ interface SessionCardProps {
     thumbnailUrl?: string;
     title: string;
     totalSentences: number;
-    progress: number; // Percentage 0-100
     timeLeft: string;
     onClick?: () => void;
 }
@@ -13,7 +12,6 @@ export default function SessionCard({
     thumbnailUrl,
     title,
     totalSentences,
-    progress,
     timeLeft,
     onClick,
 }: SessionCardProps) {
@@ -45,17 +43,6 @@ export default function SessionCard({
                     <p className="text-lg font-medium text-[#767676]">
                         {totalSentences}문장 · {timeLeft.split(':')[0]}분
                     </p>
-                </div>
-
-                {/* Progress */}
-                <div className="flex items-center gap-2 w-full">
-                    <div className="w-full h-1 bg-[#d8d8d8] rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-[#a5d592] rounded-full"
-                            style={{ width: `${progress}%` }}
-                        />
-                    </div>
-                    <span className="text-sm font-medium text-black">{progress}%</span>
                 </div>
 
                 {/* Action Button */}

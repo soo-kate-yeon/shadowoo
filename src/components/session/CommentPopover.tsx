@@ -17,7 +17,24 @@ export function CommentPopover({ initialValue = "", onSubmit, onClose }: Comment
         if (inputRef.current) {
             inputRef.current.focus();
         }
-    }, []);
+
+        const handleClickOutside = (event: MouseEvent) => {
+            if (inputRef.current && !inputRef.current.contains(event.target as Node) && onClose) {
+                // If clicking the submit button, don't close immediately (let submit handle it)
+                // Actually, the submit button is sibling to input. 
+                // Let's check if click is inside the popover container.
+                const popover = inputRef.current.closest('.bg-secondary-50');
+                if (popover && !popover.contains(event.target as Node)) {
+                    onClose();
+                }
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [onClose]);
 
     const handleSubmit = () => {
         if (comment.trim()) {

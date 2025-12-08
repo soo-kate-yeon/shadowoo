@@ -1,122 +1,177 @@
-# ShadowingNinja - YouTube 영어 학습 웹앱
+# Supabase CLI
 
-YouTube 영상과 자막을 활용한 인터랙티브 영어 학습 플랫폼
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-## 🚀 Features
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-### Phase 1: Blind Listening
-- 스크립트 없이 영상 전체 듣기
-- 집중력 향상을 위한 몰입형 학습
+This repository contains all the functionality for Supabase CLI.
 
-### Phase 2: Script Highlighting
-- 문장별 자동 하이라이팅
-- 클릭으로 타임스탬프 이동
-- 더블클릭으로 상세 노트 작성
-- 텍스트 드래그로 단어/구문 하이라이팅
-- AI 기반 학습 팁 생성 (연음, 문법, 발음, 속도)
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-### Phase 3: Shadowing
-- 1문장/1문단/전체 단위 선택
-- 반복 듣기
-- 음성 녹음 및 비교
-- 학습 진도 추적
+## Getting started
 
-## 🛠️ Tech Stack
+### Install the CLI
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **State Management**: Zustand (with localStorage persistence)
-- **APIs**: 
-  - YouTube IFrame API
-  - youtube-transcript
-  - Google Gemini AI
-- **Audio**: MediaRecorder API
-
-## 📦 Installation
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/shadowing-ninja.git
-cd shadowing-ninja
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-# Create .env.local and add:
-# GEMINI_API_KEY=your_gemini_api_key_here
-
-# Run development server
-npm run dev
+npm i supabase --save-dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the app.
-
-## 🏗️ Project Structure
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
 ```
-shadowing-ninja/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── transcript/    # YouTube transcript fetching
-│   │   │   └── ai-tip/        # AI tip generation
-│   │   ├── study/[videoId]/   # Study session page
-│   │   ├── page.tsx           # Home page
-│   │   └── layout.tsx
-│   ├── components/
-│   │   ├── YouTubePlayer.tsx  # YouTube IFrame integration
-│   │   └── SentenceItem.tsx   # Interactive sentence component
-│   ├── lib/
-│   │   └── transcript-parser.ts
-│   ├── store/
-│   │   └── useStudyStore.ts   # Zustand store
-│   └── types/
-│       └── index.ts           # TypeScript types
-└── package.json
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
 ```
 
-## 🎯 Usage
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-1. **홈 페이지에서 YouTube URL 입력**
-2. **Phase 1**: 스크립트 없이 영상 듣기
-3. **Phase 2**: 스크립트와 함께 문장별 학습
-   - 어려운 문장 더블클릭 → 노트 작성
-   - 단어/구문 드래그 → 하이라이팅 & 캡션 추가
-   - AI 팁 생성으로 학습 도움받기
-4. **Phase 3**: 쉐도잉 연습
-   - 반복 듣기 → 녹음 → 비교
+<details>
+  <summary><b>macOS</b></summary>
 
-## 📝 Development Roadmap
+  Available via [Homebrew](https://brew.sh). To install:
 
-### Phase 1: Core MVP ✅
-- [x] Project setup
-- [x] YouTube integration
-- [x] Transcript system
-- [x] Data management (Zustand + localStorage)
-- [x] Home page
-- [x] Study session page with 3 phases
-- [x] Sentence highlighting and notes
-- [ ] Shadowing mode with recording
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-### Phase 2: Advanced Features
-- [ ] Full AI integration
-- [ ] Database (Supabase)
-- [ ] User authentication
-- [ ] Advanced UX improvements
-- [ ] Mobile optimization
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-## 🤝 Contributing
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+<details>
+  <summary><b>Windows</b></summary>
 
-## 📄 License
+  Available via [Scoop](https://scoop.sh). To install:
 
-MIT License
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
-## 🙏 Acknowledgments
+  To upgrade:
 
-- YouTube IFrame API
-- Google Gemini AI
-- Next.js Team
+  ```powershell
+  scoop update supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Linux</b></summary>
+
+  Available via [Homebrew](https://brew.sh) and Linux packages.
+
+  #### via Homebrew
+
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
+```bash
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
+```

@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description: "YouTube 영상으로 영어 쉐도잉 학습하기",
 };
 
+import { Toaster } from "@/components/ui/sonner";
+import DataLoader from "@/components/DataLoader";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -16,7 +19,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <DataLoader />
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

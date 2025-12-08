@@ -1,26 +1,117 @@
-"use client";
-
 import { useState } from "react";
-import { CornerDownLeft } from "lucide-react";
+import { CornerDownLeft, Save, Check } from "lucide-react";
+import HighlightCard from "../HighlightCard";
+import { useStore } from "@/lib/store";
+import { toast } from "sonner";
 
 export interface Highlight {
+    id?: string;
     text: string;
     comment: string;
 }
 
 interface AnalysisPanelProps {
     highlights: Highlight[];
+    videoId: string;
+    sentenceId: string;
+    sentenceText: string;
+    onRemoveHighlight?: (id: string) => void;
+    onRestoreHighlight?: (highlight: Highlight) => void;
 }
 
-export function AnalysisPanel({ highlights }: AnalysisPanelProps) {
-    const [analysisState, setAnalysisState] = useState<"initial" | "loading" | "done">("initial");
+type FeedbackType = 'too_fast' | 'unknown_words' | 'linking_sounds';
 
-    const handleTagClick = () => {
+interface AIResponse {
+    analysis: string;
+    tips: string;
+    focusPoint: string;
+}
+
+export function AnalysisPanel({
+    highlights,
+    videoId,
+    sentenceId,
+    sentenceText,
+    onRemoveHighlight,
+    onRestoreHighlight
+}: AnalysisPanelProps) {
+    const [analysisState, setAnalysisState] = useState<"initial" | "loading" | "done">("initial");
+    const [selectedFeedback, setSelectedFeedback] = useState<FeedbackType[]>([]);
+    const [aiResponse, setAiResponse] = useState<AIResponse | null>(null);
+    const [isSaved, setIsSaved] = useState(false);
+
+    const addAINote = useStore(state => state.addAINote);
+
+    const toggleFeedback = (type: FeedbackType) => {
+        setSelectedFeedback(prev => {
+            const isSelected = prev.includes(type);
+            const newSelection = isSelected
+                ? prev.filter(t => t !== type)
+                : [...prev, type];
+
+            // Trigger analysis if it's the first selection
+            if (newSelection.length > 0 && analysisState === 'initial') {
+                handleAnalyze(newSelection);
+            }
+
+            return newSelection;
+        });
+    };
+
+    const handleAnalyze = async (feedback: FeedbackType[]) => {
         setAnalysisState("loading");
-        // Simulate AI loading
-        setTimeout(() => {
+
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sentence: sentenceText,
+                    feedbackTypes: feedback
+                })
+            });
+
+            if (!response.ok) throw new Error('Analysis failed');
+
+            const data = await response.json();
+            setAiResponse(data);
             setAnalysisState("done");
-        }, 1500);
+        } catch (error) {
+            console.error(error);
+            toast.error("분석을 불러오는데 실패했습니다.");
+            setAnalysisState("initial");
+        }
+    };
+
+    const handleSaveNote = () => {
+        if (!aiResponse) return;
+
+        addAINote({
+            id: crypto.randomUUID(),
+            videoId,
+            sentenceId,
+            sentenceText,
+            userFeedback: selectedFeedback,
+            aiResponse,
+            createdAt: Date.now()
+        });
+
+        setIsSaved(true);
+        toast.success("AI 노트가 저장되었습니다.");
+    };
+
+    const handleDeleteHighlight = (index: number) => {
+        const highlight = highlights[index];
+        if (!highlight.id || !onRemoveHighlight) return;
+
+        onRemoveHighlight(highlight.id);
+
+        toast("하이라이트가 삭제되었습니다.", {
+            action: {
+                label: "실행 취소",
+                onClick: () => onRestoreHighlight?.(highlight),
+            },
+        });
     };
 
     return (
@@ -30,13 +121,31 @@ export function AnalysisPanel({ highlights }: AnalysisPanelProps) {
 
                 {/* Tags */}
                 <div className="flex gap-3 flex-wrap">
-                    <button onClick={handleTagClick} className="px-3 py-2 rounded-lg bg-secondary-50 text-secondary-500 text-body-large hover:bg-white transition-colors border border-transparent hover:border-primary-500/20">
+                    <button
+                        onClick={() => toggleFeedback('too_fast')}
+                        className={`px-3 py-2 rounded-lg text-body-large transition-colors border ${selectedFeedback.includes('too_fast')
+                            ? 'bg-secondary-50 text-primary-500 border-primary-500'
+                            : 'bg-secondary-50 text-secondary-500 border-transparent hover:bg-white hover:border-primary-500/20'
+                            }`}
+                    >
                         속도가 빨라요
                     </button>
-                    <button onClick={handleTagClick} className="px-3 py-2 rounded-lg bg-secondary-50 text-secondary-500 text-body-large hover:bg-white transition-colors border border-transparent hover:border-primary-500/20">
+                    <button
+                        onClick={() => toggleFeedback('unknown_words')}
+                        className={`px-3 py-2 rounded-lg text-body-large transition-colors border ${selectedFeedback.includes('unknown_words')
+                            ? 'bg-secondary-50 text-primary-500 border-primary-500'
+                            : 'bg-secondary-50 text-secondary-500 border-transparent hover:bg-white hover:border-primary-500/20'
+                            }`}
+                    >
                         모르는 단어가 많아요
                     </button>
-                    <button onClick={handleTagClick} className={`px-3 py-2 rounded-lg text-body-large transition-colors border ${analysisState !== 'initial' ? 'bg-secondary-50 text-primary-500 border-primary-500' : 'bg-secondary-50 text-secondary-500 border-transparent hover:bg-white'}`}>
+                    <button
+                        onClick={() => toggleFeedback('linking_sounds')}
+                        className={`px-3 py-2 rounded-lg text-body-large transition-colors border ${selectedFeedback.includes('linking_sounds')
+                            ? 'bg-secondary-50 text-primary-500 border-primary-500'
+                            : 'bg-secondary-50 text-secondary-500 border-transparent hover:bg-white hover:border-primary-500/20'
+                            }`}
+                    >
                         연음 때문에 알아듣기 힘들어요
                     </button>
                 </div>
@@ -48,12 +157,72 @@ export function AnalysisPanel({ highlights }: AnalysisPanelProps) {
                     </div>
                 )}
 
-                {analysisState === "done" && (
-                    <div className="flex gap-3 items-start animate-in fade-in">
-                        <div className="w-[3px] bg-primary-500 self-stretch rounded-full min-h-[24px] mt-1" />
-                        <p className="text-secondary-500 text-body-large leading-relaxed">
-                            이 문장은 사용자가 선택한 문장이 어려운 이유에 대해서 AI가 분석해주면서 다음에 잘하려면 어떻게 해야 하는지 팁을 줍니다. 사용자는 바로 이해할 수도 있고, 그게 아니라면 이 하이라이트 노트를 따로 저장해서 나중에 홈화면에서 모아볼 수 있습니다.
-                        </p>
+                {analysisState === "done" && aiResponse && (
+                    <div className="flex flex-col gap-4 animate-in fade-in bg-white rounded-xl p-5 border border-secondary-500/20 shadow-sm">
+
+                        {/* Analysis Section */}
+                        <div className="flex gap-3 items-start">
+                            <span className="text-xl">🧐</span>
+                            <div className="flex-1">
+                                <h4 className="font-semibold text-neutral-900 mb-1">분석</h4>
+                                <p className="text-secondary-600 leading-relaxed text-sm">
+                                    {aiResponse.analysis}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-secondary-100" />
+
+                        {/* Tips Section */}
+                        <div className="flex gap-3 items-start">
+                            <span className="text-xl">💡</span>
+                            <div className="flex-1">
+                                <h4 className="font-semibold text-neutral-900 mb-1">팁</h4>
+                                <p className="text-secondary-600 leading-relaxed text-sm">
+                                    {aiResponse.tips}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-secondary-100" />
+
+                        {/* Focus Point Section */}
+                        <div className="flex gap-3 items-start">
+                            <span className="text-xl">🎯</span>
+                            <div className="flex-1">
+                                <h4 className="font-semibold text-neutral-900 mb-1">집중 포인트</h4>
+                                <p className="text-primary-600 font-medium text-sm">
+                                    {aiResponse.focusPoint}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Save Button */}
+                        <div className="flex justify-end mt-2">
+                            <button
+                                onClick={handleSaveNote}
+                                disabled={isSaved}
+                                className={`
+                                    flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
+                                    ${isSaved
+                                        ? 'bg-green-100 text-green-700 cursor-default'
+                                        : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
+                                    }
+                                `}
+                            >
+                                {isSaved ? (
+                                    <>
+                                        <Check className="w-4 h-4" />
+                                        저장됨
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-4 h-4" />
+                                        노트에 저장
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -71,25 +240,12 @@ export function AnalysisPanel({ highlights }: AnalysisPanelProps) {
                     ) : (
                         <div className="flex flex-col gap-4">
                             {highlights.map((h, i) => (
-                                <div key={i} className="flex flex-col gap-2 w-full">
-                                    {/* Highlighted Text */}
-                                    <div className="flex gap-2 items-center w-full">
-                                        <div className="bg-accent-highlight h-full min-h-[20px] w-[3px] shrink-0 rounded-full" />
-                                        <p className="text-body-large text-neutral-900 font-medium leading-relaxed break-words">
-                                            {h.text}
-                                        </p>
-                                    </div>
-
-                                    {/* Comment */}
-                                    <div className="flex gap-2 items-start pl-3">
-                                        <div className="shrink-0 mt-1">
-                                            <CornerDownLeft className="w-[18px] h-[19px] text-secondary-500/50" />
-                                        </div>
-                                        <p className="text-body-large text-secondary-500 leading-relaxed">
-                                            {h.comment}
-                                        </p>
-                                    </div>
-                                </div>
+                                <HighlightCard
+                                    key={i}
+                                    highlightedSentence={h.text}
+                                    userCaption={h.comment}
+                                    onDelete={() => handleDeleteHighlight(i)}
+                                />
                             ))}
                         </div>
                     )}

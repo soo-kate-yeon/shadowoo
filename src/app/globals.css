@@ -55,6 +55,14 @@
   --color-accent-highlight: #ecc845;
   --color-accent-peach: #f8e4d8;
 
+  /* System Colors (from design-system.json sys.color) */
+  --color-surface: #f9f7f3;
+  --color-on-surface: #000000;
+  --color-background: #ebe8e2;
+  --color-on-background: #000000;
+  --color-outline: #e3e3e3;
+  --color-outline-variant: #d8d8d8;
+
   /* Fonts */
   --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-secondary: 'Open Sans', 'Noto Sans KR', sans-serif;
