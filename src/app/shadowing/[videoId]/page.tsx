@@ -33,22 +33,28 @@ export default function ShadowingPage() {
         const fetchTranscript = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/transcript?videoId=${videoId}&mode=${mode}`);
+                const response = await fetch(`/api/curated-videos/${videoId}`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch transcript');
+                    throw new Error('Failed to fetch curated video');
                 }
                 const data = await response.json();
-                setSentences(data.sentences);
+
+                // The API returns a single video with transcript
+                if (data.video && data.video.transcript) {
+                    setSentences(data.video.transcript);
+                } else {
+                    throw new Error('No transcript available');
+                }
             } catch (err) {
                 console.error(err);
-                setError('Failed to load session');
+                setError('Failed to load video. Please make sure it has been added via the admin panel.');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchTranscript();
-    }, [videoId, mode]);
+    }, [videoId]);
 
     const handlePlayerReady = (playerInstance: YT.Player) => {
         setPlayer(playerInstance);
