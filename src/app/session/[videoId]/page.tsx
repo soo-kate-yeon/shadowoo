@@ -305,7 +305,11 @@ export default function SessionPage() {
 
             {currentStep === 1 ? (
                 // Step 1: Listen without script
+<<<<<<< HEAD
                 <main className="flex-1 flex gap-6 p-8 h-[calc(100vh-80px)]">
+=======
+                <main className="flex-1 flex gap-6 p-8 h-[calc(100vh-64px)]">
+>>>>>>> 6515825 (initial commit)
                     {/* Left: Video Player */}
                     <div className="w-1/2 h-full flex flex-col">
                         <h2 className="text-2xl font-bold text-neutral-900 leading-relaxed mb-6 tracking-tight whitespace-pre-wrap">
@@ -331,7 +335,11 @@ export default function SessionPage() {
                 </main>
             ) : (
                 // Step 2: Script view
+<<<<<<< HEAD
                 <main className="flex-1 flex gap-6 p-8 h-[calc(100vh-80px)]">
+=======
+                <main className="flex-1 flex gap-6 p-8 h-[calc(100vh-64px)]">
+>>>>>>> 6515825 (initial commit)
                     {/* Left: Video Player */}
                     <div className="w-1/2 h-full flex flex-col">
                         <h2 className="text-2xl font-bold text-neutral-900 leading-relaxed mb-6 tracking-tight whitespace-pre-wrap">

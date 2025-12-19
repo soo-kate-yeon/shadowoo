@@ -16,8 +16,8 @@ export default function TopNav() {
                 <Link
                     href="/home"
                     className={`text-body-large font-medium transition-colors ${isSessionActive
-                            ? 'text-primary-500'
-                            : 'text-neutral-600 hover:text-neutral-900'
+                        ? 'text-primary-500'
+                        : 'text-neutral-600 hover:text-neutral-900'
                         }`}
                 >
                     세션
@@ -25,8 +25,8 @@ export default function TopNav() {
                 <Link
                     href="/archive"
                     className={`text-body-large font-medium transition-colors ${isArchiveActive
-                            ? 'text-primary-500'
-                            : 'text-neutral-600 hover:text-neutral-900'
+                        ? 'text-primary-500'
+                        : 'text-neutral-600 hover:text-neutral-900'
                         }`}
                 >
                     노트

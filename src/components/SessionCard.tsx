@@ -5,6 +5,7 @@ interface SessionCardProps {
     title: string;
     totalSentences: number;
     timeLeft: string;
+    progress?: number;
     onClick?: () => void;
 }
 
@@ -13,6 +14,7 @@ export default function SessionCard({
     title,
     totalSentences,
     timeLeft,
+    progress,
     onClick,
 }: SessionCardProps) {
     return (
