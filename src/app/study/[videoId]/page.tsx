@@ -6,7 +6,6 @@ import YouTubePlayer, { playerControls } from '@/components/YouTubePlayer';
 import SentenceItem from '@/components/SentenceItem';
 import ShadowingMode from '@/components/ShadowingMode';
 import { useStudyStore } from '@/store/useStudyStore';
-import { parseTranscriptToSentences } from '@/lib/transcript-parser';
 import { Sentence } from '@/types';
 
 export default function StudyPage() {
@@ -19,6 +18,7 @@ export default function StudyPage() {
     const [currentTime, setCurrentTime] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [videoData, setVideoData] = useState<any>(null);
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -36,27 +36,29 @@ export default function StudyPage() {
             setCurrentSession(existingSession.id);
             setIsLoading(false);
         } else {
-            // Fetch transcript and create new session
-            console.log('Creating new session for:', videoId);
-            fetchTranscriptAndCreateSession();
+            // Fetch curated video metadata and transcript
+            console.log('Fetching curated video for:', videoId);
+            fetchCuratedVideoAndCreateSession();
         }
-    }, [videoId, isMounted, sessions.length]); // Added sessions.length to retry if sessions load late
+    }, [videoId, isMounted, sessions.length]);
 
-    const fetchTranscriptAndCreateSession = async () => {
+    const fetchCuratedVideoAndCreateSession = async () => {
         try {
-            const response = await fetch(`/api/transcript?videoId=${videoId}`);
+            // Fetch from the curated videos API
+            const response = await fetch(`/api/curated-videos/${videoId}`);
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || '자막을 가져올 수 없습니다');
+                throw new Error(data.error || '영상을 찾을 수 없습니다');
             }
 
-            const sentences = parseTranscriptToSentences(data.transcript);
-            console.log('Parsed sentences:', sentences.length);
-            createSession(videoId, `Video ${videoId}`, sentences);
+            // data.transcript is already an array of Sentence objects
+            console.log('Loaded curated video:', data.title);
+            setVideoData(data);
+            createSession(videoId, data.title, data.transcript);
             setIsLoading(false);
         } catch (err) {
-            console.error('Error fetching transcript:', err);
+            console.error('Error fetching curated video:', err);
             setError(err instanceof Error ? err.message : '오류가 발생했습니다');
             setIsLoading(false);
         }
@@ -173,6 +175,8 @@ export default function StudyPage() {
                             videoId={videoId}
                             onReady={setPlayer}
                             onTimeUpdate={setCurrentTime}
+                            startSeconds={videoData?.snippet_start_time}
+                            endSeconds={videoData?.snippet_end_time}
                             className="rounded-2xl overflow-hidden shadow-lg"
                         />
                     </div>
@@ -214,21 +218,21 @@ function ScriptPanel({
 }: {
     sentences: Sentence[];
     currentTime: number;
-    player: YT.Player | null;
+    player: any; // Using any for YT.Player type compatibility across components
 }) {
     const [activeSentenceId, setActiveSentenceId] = useState<string | null>(null);
     const { currentSession } = useStudyStore();
 
     useEffect(() => {
         const active = sentences.find(
-            s => currentTime >= s.start && currentTime < s.end
+            s => currentTime >= s.startTime && currentTime < s.endTime
         );
         setActiveSentenceId(active?.id || null);
     }, [currentTime, sentences]);
 
     const handleSentenceClick = (sentence: Sentence) => {
         if (player) {
-            playerControls.seekTo(player, sentence.start);
+            playerControls.seekTo(player, sentence.startTime);
             playerControls.play(player);
         }
     };

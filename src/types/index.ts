@@ -1,9 +1,8 @@
 export interface Sentence {
   id: string;
   text: string;
-  start: number; // seconds - when this sentence starts
-  duration: number; // seconds - how long this sentence lasts
-  end: number; // seconds - when this sentence ends (start + duration)
+  startTime: number; // seconds
+  endTime: number;
 
   // Note information
   notes?: {

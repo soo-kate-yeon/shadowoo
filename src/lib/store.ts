@@ -36,8 +36,8 @@ export interface SavedSentence {
     videoId: string;
     sentenceId: string; // Reference to the sentence ID
     sentenceText: string;
-    start: number;
-    end: number;
+    startTime: number;
+    endTime: number;
     createdAt: number;
 }
 

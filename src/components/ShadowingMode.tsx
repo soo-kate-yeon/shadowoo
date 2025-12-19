@@ -30,12 +30,12 @@ export default function ShadowingMode({ sentences, player }: ShadowingModeProps)
     const playSentence = () => {
         if (!player || !currentSentence) return;
 
-        playerControls.seekTo(player, currentSentence.start);
+        playerControls.seekTo(player, currentSentence.startTime);
         playerControls.play(player);
         setListenCount(prev => prev + 1);
 
         // Auto-pause at sentence end
-        const duration = (currentSentence.end - currentSentence.start) * 1000;
+        const duration = (currentSentence.endTime - currentSentence.startTime) * 1000;
         setTimeout(() => {
             playerControls.pause(player);
         }, duration);

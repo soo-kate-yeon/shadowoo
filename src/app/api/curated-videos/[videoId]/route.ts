@@ -22,9 +22,7 @@ export async function GET(
             );
         }
 
-        return NextResponse.json({
-            video: data
-        });
+        return NextResponse.json(data);
 
     } catch (error) {
         console.error('Curated video fetch error:', error);

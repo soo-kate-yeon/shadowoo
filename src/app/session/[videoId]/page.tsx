@@ -62,22 +62,22 @@ export default function SessionPage() {
 
                 const data = await response.json();
                 console.log('📦 [SessionPage] Curated video loaded:', {
-                    title: data.video?.title,
-                    sentenceCount: data.video?.transcript?.length,
-                    snippet_duration: data.video?.snippet_duration
+                    title: data.title,
+                    sentenceCount: data.transcript?.length,
+                    snippet_duration: data.snippet_duration
                 });
 
                 // Validate response data
-                if (!data.video || !data.video.transcript || !Array.isArray(data.video.transcript)) {
+                if (!data || !data.transcript || !Array.isArray(data.transcript)) {
                     throw new Error('Invalid video data structure');
                 }
 
                 // Handle empty array
-                if (data.video.transcript.length === 0) {
+                if (data.transcript.length === 0) {
                     throw new Error('This video has no transcript available');
                 }
 
-                setSentences(data.video.transcript);
+                setSentences(data.transcript);
 
                 // Check if session exists and load last position
                 const existingSession = sessions[videoId];
@@ -167,7 +167,7 @@ export default function SessionPage() {
             // Find the sentence and start playing it
             const sentence = sentences.find(s => s.id === sentenceId);
             if (sentence && player) {
-                player.seekTo(sentence.start, true);
+                player.seekTo(sentence.startTime, true);
                 player.playVideo();
             }
         } else {
@@ -186,8 +186,8 @@ export default function SessionPage() {
             if (player && player.getCurrentTime) {
                 const currentTime = player.getCurrentTime();
                 // If we've passed the end of the looping sentence, restart it
-                if (currentTime >= loopingSentence.end) {
-                    player.seekTo(loopingSentence.start, true);
+                if (currentTime >= loopingSentence.endTime) {
+                    player.seekTo(loopingSentence.startTime, true);
                     player.playVideo();
                 }
             }
@@ -222,7 +222,7 @@ export default function SessionPage() {
             // Add a small delay to ensure player is fully initialized and ready to seek
             setTimeout(() => {
                 if (player && player.seekTo) {
-                    player.seekTo(targetSentence.start, true);
+                    player.seekTo(targetSentence.startTime, true);
                     // Optional: Auto-play could be added here if desired
                     // player.playVideo();
                 }
@@ -237,7 +237,7 @@ export default function SessionPage() {
 
     // Find active sentence
     const activeSentenceIndex = sentences.findIndex(
-        (s) => currentTime >= s.start && currentTime < s.end
+        (s) => currentTime >= s.startTime && currentTime < s.endTime
     );
 
     // Track active sentence position (only in Step 2)

@@ -48,7 +48,7 @@ export function ShadowingScriptList({
                     // Find the expanded sentence and play it
                     const sentence = sentences.find(s => s.id === expandedId);
                     if (sentence) {
-                        onPlaySentence(sentence.start, sentence.end);
+                        onPlaySentence(sentence.startTime, sentence.endTime);
                     }
                 }
             }
@@ -99,10 +99,10 @@ export function ShadowingScriptList({
                     {expandedId === sentence.id && (
                         <div className="pl-10">
                             <ShadowingRecorder
-                                onPlayOriginal={() => onPlaySentence(sentence.start, sentence.end)}
+                                onPlayOriginal={() => onPlaySentence(sentence.startTime, sentence.endTime)}
                                 onStopOriginal={onStopOriginal}
                                 isOriginalPlaying={currentPlayingId === sentence.id && isPlaying}
-                                sentenceDuration={sentence.end - sentence.start}
+                                sentenceDuration={sentence.endTime - sentence.startTime}
                             />
                         </div>
                     )}

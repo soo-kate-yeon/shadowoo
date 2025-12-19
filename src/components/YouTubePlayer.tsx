@@ -22,6 +22,13 @@ declare global {
     }
 }
 
+// Exported controls to interact with the player from parent components
+export const playerControls = {
+    play: (player: YT.Player) => player.playVideo(),
+    pause: (player: YT.Player) => player.pauseVideo(),
+    seekTo: (player: YT.Player, seconds: number) => player.seekTo(seconds, true),
+};
+
 // Custom Icons matching the context design
 function ClockIcon() {
     return (

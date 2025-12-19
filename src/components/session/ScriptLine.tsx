@@ -97,8 +97,8 @@ export function ScriptLine({
                 videoId: videoId,
                 sentenceId: sentence.id,
                 sentenceText: sentence.text,
-                start: sentence.start,
-                end: sentence.end,
+                startTime: sentence.startTime,
+                endTime: sentence.endTime,
                 createdAt: Date.now()
             });
         } else {
@@ -161,7 +161,7 @@ export function ScriptLine({
                             handleExpandToggle();
                             // Also seek when clicking the line (if not selecting)
                             if (!selection) {
-                                onSeek(sentence.start);
+                                onSeek(sentence.startTime);
                             }
                         }}
                         className={`

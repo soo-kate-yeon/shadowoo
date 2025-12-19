@@ -120,8 +120,8 @@ export async function saveSavedSentence(userId: string, sentence: SavedSentence)
       video_id: sentence.videoId,
       sentence_id: sentence.sentenceId,
       sentence_text: sentence.sentenceText,
-      start_time: sentence.start,
-      end_time: sentence.end,
+      start_time: sentence.startTime,
+      end_time: sentence.endTime,
       created_at: new Date(sentence.createdAt).toISOString(),
     });
 
@@ -161,8 +161,8 @@ export async function loadSavedSentences(userId: string): Promise<SavedSentence[
     videoId: item.video_id,
     sentenceId: item.sentence_id,
     sentenceText: item.sentence_text,
-    start: item.start_time,
-    end: item.end_time,
+    startTime: item.start_time,
+    endTime: item.end_time,
     createdAt: new Date(item.created_at).getTime(),
   })) || [];
 }

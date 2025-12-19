@@ -33,28 +33,22 @@ export default function ShadowingPage() {
         const fetchTranscript = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/curated-videos/${videoId}`);
+                const response = await fetch(`/api/transcript?videoId=${videoId}&mode=${mode}`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch curated video');
+                    throw new Error('Failed to fetch transcript');
                 }
                 const data = await response.json();
-
-                // The API returns a single video with transcript
-                if (data.video && data.video.transcript) {
-                    setSentences(data.video.transcript);
-                } else {
-                    throw new Error('No transcript available');
-                }
+                setSentences(data.sentences);
             } catch (err) {
                 console.error(err);
-                setError('Failed to load video. Please make sure it has been added via the admin panel.');
+                setError('Failed to load session');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchTranscript();
-    }, [videoId]);
+    }, [videoId, mode]);
 
     const handlePlayerReady = (playerInstance: YT.Player) => {
         setPlayer(playerInstance);
@@ -69,7 +63,7 @@ export default function ShadowingPage() {
         }
 
         // Find sentence ID
-        const sentence = sentences.find(s => s.start === startTime);
+        const sentence = sentences.find(s => s.startTime === startTime);
         if (sentence) {
             setCurrentPlayingId(sentence.id);
         }
