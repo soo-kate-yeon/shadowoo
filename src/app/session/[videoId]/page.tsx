@@ -62,22 +62,22 @@ export default function SessionPage() {
 
                 const data = await response.json();
                 console.log('📦 [SessionPage] Curated video loaded:', {
-                    title: data.title,
-                    sentenceCount: data.transcript?.length,
-                    snippet_duration: data.snippet_duration
+                    title: data.video?.title,
+                    sentenceCount: data.video?.transcript?.length,
+                    snippet_duration: data.video?.snippet_duration
                 });
 
                 // Validate response data
-                if (!data || !data.transcript || !Array.isArray(data.transcript)) {
+                if (!data.video || !data.video.transcript || !Array.isArray(data.video.transcript)) {
                     throw new Error('Invalid video data structure');
                 }
 
                 // Handle empty array
-                if (data.transcript.length === 0) {
+                if (data.video.transcript.length === 0) {
                     throw new Error('This video has no transcript available');
                 }
 
-                setSentences(data.transcript);
+                setSentences(data.video.transcript);
 
                 // Check if session exists and load last position
                 const existingSession = sessions[videoId];
