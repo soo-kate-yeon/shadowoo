@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Primary Colors */
+  --color-primary-50: #fef7f2;
+  --color-primary-100: #fef2e9;
+  --color-primary-200: #fbe4d4;
+  --color-primary-300: #f8d2b8;
+  --color-primary-400: #f3a76c;
+  --color-primary-500: #ed752a;
+  --color-primary-600: #d46623;
+  --color-primary-700: #a85119;
+  --color-primary-800: #7f3d13;
+  --color-primary-900: #562a0e;
+  --color-primary-950: #2d1507;
+
+  /* Secondary Colors */
+  --color-secondary-50: #f9f7f3;
+  --color-secondary-100: #f3f1eb;
+  --color-secondary-200: #ebe8e2;
+  --color-secondary-300: #e7e2d9;
+  --color-secondary-400: #d8d8d8;
+  --color-secondary-500: #b4a69e;
+  --color-secondary-600: #8a7a71;
+  --color-secondary-700: #6b5e56;
+  --color-secondary-800: #4a413b;
+  --color-secondary-900: #2c2c2c;
+  --color-secondary-950: #1e1e1e;
+
+  /* Neutral Colors */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  /* Semantic Colors */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Accent Colors */
+  --color-accent-yellow: #ffe586;
+  --color-accent-yellow-light: #fee500;
+  --color-accent-highlight: #ecc845;
+  --color-accent-peach: #f8e4d8;
+
+  /* System Colors (from design-system.json sys.color) */
+  --color-surface: #f9f7f3;
+  --color-on-surface: #000000;
+  --color-background: #ebe8e2;
+  --color-on-background: #000000;
+  --color-outline: #e3e3e3;
+  --color-outline-variant: #d8d8d8;
+
+  /* Fonts */
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-secondary: 'Open Sans', 'Noto Sans KR', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Typography Tokens */
+  --text-display-large: 30px;
+  --text-display-large--line-height: 36px;
+  --text-display-large--font-weight: 700;
+  --text-display-large--letter-spacing: -0.75px;
+
+  --text-headline-large: 22px;
+  --text-headline-large--line-height: 28px;
+  --text-headline-large--font-weight: 600;
+  --text-headline-large--letter-spacing: -0.55px;
+
+  --text-headline-medium: 18px;
+  --text-headline-medium--line-height: 24px;
+  --text-headline-medium--font-weight: 600;
+
+  --text-title-medium: 16px;
+  --text-title-medium--line-height: 24px;
+  --text-title-medium--font-weight: 600;
+
+  --text-body-large: 16px;
+  --text-body-large--line-height: 24px;
+  --text-body-large--font-weight: 400;
+
+  --text-body-medium: 14px;
+  --text-body-medium--line-height: 20px;
+  --text-body-medium--font-weight: 400;
+
+  --text-label-large: 14px;
+  --text-label-large--line-height: 20px;
+  --text-label-large--font-weight: 500;
+  --text-label-large--letter-spacing: 0.1px;
+
+  --text-label-medium: 12px;
+  --text-label-medium--line-height: 16px;
+  --text-label-medium--font-weight: 500;
+  --text-label-medium--letter-spacing: 0.5px;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
+
+/* Base Styles */
+@layer base {
+  body {
+    background-color: var(--color-secondary-200);
+    /* sys.color.background */
+    color: var(--color-neutral-900);
+    /* sys.color.on-background */
+    font-family: var(--font-sans);
+  }
+}
+
+/* Utility Classes for Typography */
+.text-display-large {
+  font-family: var(--font-sans);
+  font-size: var(--text-display-large);
+  line-height: var(--text-display-large--line-height);
+  font-weight: var(--text-display-large--font-weight);
+  letter-spacing: var(--text-display-large--letter-spacing);
+}
+
+.text-headline-large {
+  font-family: var(--font-sans);
+  font-size: var(--text-headline-large);
+  line-height: var(--text-headline-large--line-height);
+  font-weight: var(--text-headline-large--font-weight);
+  letter-spacing: var(--text-headline-large--letter-spacing);
+}
+
+.text-headline-medium {
+  font-family: var(--font-sans);
+  font-size: var(--text-headline-medium);
+  line-height: var(--text-headline-medium--line-height);
+  font-weight: var(--text-headline-medium--font-weight);
+}
+
+.text-title-medium {
+  font-family: var(--font-secondary);
+  font-size: var(--text-title-medium);
+  line-height: var(--text-title-medium--line-height);
+  font-weight: var(--text-title-medium--font-weight);
+}
+
+.text-body-large {
+  font-family: var(--font-secondary);
+  font-size: var(--text-body-large);
+  line-height: var(--text-body-large--line-height);
+  font-weight: var(--text-body-large--font-weight);
+}
+
+.text-body-medium {
+  font-family: var(--font-secondary);
+  font-size: var(--text-body-medium);
+  line-height: var(--text-body-medium--line-height);
+  font-weight: var(--text-body-medium--font-weight);
+}
+
+.text-label-large {
+  font-family: var(--font-secondary);
+  font-size: var(--text-label-large);
+  line-height: var(--text-label-large--line-height);
+  font-weight: var(--text-label-large--font-weight);
+  letter-spacing: var(--text-label-large--letter-spacing);
+}
+
+.text-label-medium {
+  font-family: var(--font-secondary);
+  font-size: var(--text-label-medium);
+  line-height: var(--text-label-medium--line-height);
+  font-weight: var(--text-label-medium--font-weight);
+  letter-spacing: var(--text-label-medium--letter-spacing);
+}
