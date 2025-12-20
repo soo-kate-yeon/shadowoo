@@ -12,6 +12,11 @@ import { CuratedVideo } from '@/types';
 export default function HomePage() {
     const router = useRouter();
     const sessions = useStore((state) => state.sessions);
+    const removeSession = useStore((state) => state.removeSession);
+
+    // Edit mode state
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [selectedVideoIds, setSelectedVideoIds] = useState<Set<string>>(new Set());
 
     // Curated videos state
     const [curatedVideos, setCuratedVideos] = useState<CuratedVideo[]>([]);
@@ -118,7 +123,7 @@ export default function HomePage() {
                                             <div className="bg-surface rounded-2xl overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                                                 <div className="aspect-video relative bg-secondary-300">
                                                     <img
-                                                        src={video.thumbnail_url || `https://img.youtube.com/vi/${video.video_id}/mqdefault.jpg`}
+                                                        src={video.thumbnail_url || `https://img.youtube.com/vi/${video.video_id}/hqdefault.jpg`}
                                                         alt={video.title}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -149,8 +154,62 @@ export default function HomePage() {
 
                     {/* Right Column: Recent Sessions */}
                     <section className="bg-[#f3f3f3] rounded-2xl p-4 h-full w-[67%] flex flex-col">
-                        <div className="flex items-center gap-1 relative mb-4 shrink-0">
+                        <div className="flex items-center justify-between relative mb-4 shrink-0">
                             <h2 className="text-xl font-semibold text-black">학습 중인 영상</h2>
+                            <div className="flex items-center gap-2">
+                                {isEditMode ? (
+                                    <>
+                                        <button
+                                            onClick={() => {
+                                                if (selectedVideoIds.size === recentSessions.length) {
+                                                    setSelectedVideoIds(new Set());
+                                                } else {
+                                                    setSelectedVideoIds(new Set(recentSessions.map(s => s.videoId)));
+                                                }
+                                            }}
+                                            className="text-sm font-medium text-secondary-600 hover:text-secondary-900 transition-colors"
+                                        >
+                                            {selectedVideoIds.size === recentSessions.length ? '전체 해제' : '전체 선택'}
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                if (selectedVideoIds.size === 0) return;
+                                                const idsToDelete = Array.from(selectedVideoIds);
+                                                for (const videoId of idsToDelete) {
+                                                    await removeSession(videoId);
+                                                }
+                                                setSelectedVideoIds(new Set());
+                                                setIsEditMode(false);
+                                            }}
+                                            disabled={selectedVideoIds.size === 0}
+                                            className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${selectedVideoIds.size > 0
+                                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                : 'bg-secondary-100 text-secondary-400 cursor-not-allowed'
+                                                }`}
+                                        >
+                                            삭제 {selectedVideoIds.size > 0 && `(${selectedVideoIds.size})`}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setIsEditMode(false);
+                                                setSelectedVideoIds(new Set());
+                                            }}
+                                            className="text-sm font-medium text-secondary-600 hover:text-secondary-900 transition-colors"
+                                        >
+                                            취소
+                                        </button>
+                                    </>
+                                ) : (
+                                    recentSessions.length > 0 && (
+                                        <button
+                                            onClick={() => setIsEditMode(true)}
+                                            className="text-sm font-medium text-secondary-600 hover:text-secondary-900 transition-colors"
+                                        >
+                                            편집
+                                        </button>
+                                    )
+                                )}
+                            </div>
                         </div>
                         <div className="flex-1 min-h-0 overflow-y-auto pr-2">
                             {recentSessions.length > 0 ? (
@@ -158,16 +217,34 @@ export default function HomePage() {
                                     {recentSessions.map((session) => {
                                         // Find video info from curatedVideos if possible
                                         const curatedVideo = curatedVideos.find(v => v.video_id === session.videoId);
+                                        const isSelected = selectedVideoIds.has(session.videoId);
                                         return (
-                                            <SessionCard
+                                            <div
                                                 key={session.id}
-                                                title={curatedVideo?.title || `Video ${session.videoId}`}
-                                                thumbnailUrl={curatedVideo?.thumbnail_url || `https://img.youtube.com/vi/${session.videoId}/mqdefault.jpg`}
-                                                progress={session.progress}
-                                                timeLeft={session.timeLeft}
-                                                totalSentences={session.totalSentences}
-                                                onClick={() => router.push(`/session/${session.videoId}`)}
-                                            />
+                                                onClick={() => !isEditMode && router.push(`/session/${session.videoId}`)}
+                                                className={`cursor-pointer ${isEditMode ? 'pointer-events-auto' : ''}`}
+                                            >
+                                                <SessionCard
+                                                    title={curatedVideo?.title || `Video ${session.videoId}`}
+                                                    thumbnailUrl={curatedVideo?.thumbnail_url || `https://img.youtube.com/vi/${session.videoId}/hqdefault.jpg`}
+                                                    progress={session.progress}
+                                                    timeLeft={session.timeLeft}
+                                                    totalSentences={session.totalSentences}
+                                                    isEditMode={isEditMode}
+                                                    isSelected={isSelected}
+                                                    onToggleSelection={() => {
+                                                        const newSelected = new Set(selectedVideoIds);
+                                                        if (isSelected) {
+                                                            newSelected.delete(session.videoId);
+                                                        } else {
+                                                            newSelected.add(session.videoId);
+                                                        }
+                                                        setSelectedVideoIds(newSelected);
+                                                    }}
+                                                    onClick={() => { }}
+                                                />
+                                            </div>
+                                        );
                                         );
                                     })}
                                 </div>

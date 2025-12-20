@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
         // Fetch video metadata
         const title = `Video ${video_id}`;
-        const thumbnail_url = `https://img.youtube.com/vi/${video_id}/mqdefault.jpg`;
+        const thumbnail_url = `https://img.youtube.com/vi/${video_id}/hqdefault.jpg`;
 
         const supabase = await createClient();
 

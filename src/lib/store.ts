@@ -72,6 +72,7 @@ interface AppState {
     removeSavedSentence: (id: string) => void;
     addAINote: (note: AINote) => void;
     removeAINote: (id: string) => void;
+    removeSession: (videoId: string) => void;
     getVideo: (videoId: string) => Video | undefined;
 
     // Supabase sync
@@ -228,6 +229,18 @@ export const useStore = create<AppState>()(
             },
 
             getVideo: (videoId) => get().videos.find((v) => v.id === videoId),
+
+            removeSession: async (videoId) => {
+                set((state) => {
+                    const { [videoId]: _, ...remainingSessions } = state.sessions;
+                    return { sessions: remainingSessions };
+                });
+
+                const userId = await getCurrentUserId();
+                if (userId) {
+                    await SupabaseStore.deleteSession(userId, videoId);
+                }
+            },
 
             loadUserData: async () => {
                 const userId = await getCurrentUserId();

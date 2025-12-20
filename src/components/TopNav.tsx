@@ -7,7 +7,7 @@ import UserMenu from '@/components/auth/UserMenu';
 export default function TopNav() {
     const pathname = usePathname();
 
-    const isSessionActive = pathname?.startsWith('/session') || pathname?.startsWith('/shadowing');
+    const isSessionActive = pathname === '/home' || pathname?.startsWith('/session') || pathname?.startsWith('/shadowing');
     const isArchiveActive = pathname?.startsWith('/archive');
 
     return (

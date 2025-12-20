@@ -27,6 +27,19 @@ export async function saveSession(userId: string, session: Session) {
   }
 }
 
+export async function deleteSession(userId: string, videoId: string) {
+  const { error } = await supabase
+    .from('sessions')
+    .delete()
+    .eq('user_id', userId)
+    .eq('video_id', videoId);
+
+  if (error) {
+    console.error('Error deleting session:', error);
+    throw error;
+  }
+}
+
 export async function loadSessions(userId: string): Promise<Record<string, Session>> {
   const { data, error } = await supabase
     .from('sessions')

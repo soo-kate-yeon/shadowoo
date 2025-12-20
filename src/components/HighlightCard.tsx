@@ -54,8 +54,7 @@ export default function HighlightCard({
                 <div className="h-auto relative w-full pl-[26px]">
                     <div className="absolute left-[16px] top-0 w-[18px] h-[18px] flex items-center justify-center -ml-4">
                         <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 18 18">
-                            {/* Horizontally flipped arrow */}
-                            <path d="M17 1 L17 10 L8 10" stroke="#D8D8D8" strokeWidth="2" strokeLinecap="square" />
+                            <path d="M1 4 L1 14 L11 14" stroke="#D8D8D8" strokeWidth="2" strokeLinecap="square" />
                         </svg>
                     </div>
                     <p className="text-base font-normal text-secondary-500 leading-tight font-['SF_Pro_Display'] break-words">
