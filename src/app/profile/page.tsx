@@ -7,6 +7,7 @@ import { User } from '@supabase/supabase-js';
 import TopNav from '@/components/TopNav';
 import { useStore } from '@/lib/store';
 import { Button } from '../../../ui/button';
+import AdminButton from './AdminButton';
 
 export default function ProfilePage() {
     const [user, setUser] = useState<User | null>(null);
@@ -99,6 +100,11 @@ export default function ProfilePage() {
                         플랜 업그레이드
                     </Button>
                 </section>
+
+                {/* Admin Access Section */}
+                {user && (
+                    <AdminButton userId={user.id} />
+                )}
 
                 {/* Logout Section */}
                 <section className="bg-surface rounded-2xl p-6 border border-secondary-200 shadow-sm">

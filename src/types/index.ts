@@ -3,6 +3,7 @@ export interface Sentence {
   text: string;
   startTime: number; // seconds
   endTime: number;
+  translation?: string;
 
   // Note information
   notes?: {

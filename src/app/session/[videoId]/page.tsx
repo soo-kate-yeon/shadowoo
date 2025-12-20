@@ -17,6 +17,7 @@ export default function SessionPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [sentences, setSentences] = useState<Sentence[]>([]);
+    const [videoData, setVideoData] = useState<any>(null);
     const [currentStep, setCurrentStep] = useState<1 | 2>(1); // Step 1: listen, Step 2: script
 
     const [player, setPlayer] = useState<YT.Player | null>(null);
@@ -78,6 +79,7 @@ export default function SessionPage() {
                 }
 
                 setSentences(data.transcript);
+                setVideoData(data);
 
                 // Check if session exists and load last position
                 const existingSession = sessions[videoId];
@@ -301,7 +303,7 @@ export default function SessionPage() {
         <div className="h-screen bg-secondary-200 flex flex-col overflow-hidden relative">
             {/* Header */}
             <SessionHeader
-                title={video?.title || 'Unknown Video'}
+                title={videoData?.title || 'Loading...'}
                 currentStep={currentStep}
                 onBack={() => router.push('/home')}
                 onNextStep={handleNextStep}
@@ -323,6 +325,8 @@ export default function SessionPage() {
                                 className="w-full h-full"
                                 onReady={handlePlayerReady}
                                 onTimeUpdate={handleTimeUpdate}
+                                startSeconds={videoData?.snippet_start_time}
+                                endSeconds={videoData?.snippet_end_time}
                             />
                         </div>
                     </div>
@@ -350,6 +354,8 @@ export default function SessionPage() {
                                 className="w-full h-full"
                                 onReady={handlePlayerReady}
                                 onTimeUpdate={handleTimeUpdate}
+                                startSeconds={videoData?.snippet_start_time}
+                                endSeconds={videoData?.snippet_end_time}
                             />
                         </div>
                     </div>

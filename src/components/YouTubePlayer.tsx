@@ -12,6 +12,7 @@ interface YouTubePlayerProps {
     disableSpacebarControl?: boolean;
     startSeconds?: number; // Start time for snippet playback
     endSeconds?: number;   // End time for snippet playback
+    showNativeControls?: boolean; // Show native YouTube controls
     className?: string;
 }
 
@@ -56,6 +57,7 @@ export default function YouTubePlayer({
     disableSpacebarControl = false,
     startSeconds = 0,
     endSeconds,
+    showNativeControls = false,
     className = '',
 }: YouTubePlayerProps) {
     const playerRef = useRef<YT.Player | null>(null);
@@ -98,7 +100,7 @@ export default function YouTubePlayer({
             videoId,
             playerVars: {
                 autoplay: 0,
-                controls: 0, // Hide default controls
+                controls: showNativeControls ? 1 : 0, // Toggle default controls
                 modestbranding: 1,
                 rel: 0,
                 disablekb: 1, // Disable default keyboard controls
@@ -244,56 +246,58 @@ export default function YouTubePlayer({
             </div>
 
             {/* Custom Controls Overlay */}
-            <div
-                className={cn(
-                    "absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/60 to-transparent transition-opacity duration-300 rounded-2xl pointer-events-none",
-                    showControls || !isPlaying ? "opacity-100" : "opacity-0"
-                )}
-            >
-                <div className="flex items-center gap-3 controls-area pointer-events-auto">
-                    {/* Time */}
-                    <div className="bg-black/30 backdrop-blur-md px-3 py-2 rounded-full flex items-center gap-2 border border-secondary-500/30">
-                        <span className="text-secondary-50 text-body-large font-medium">{formatTime(currentTime)}</span>
-                        <span className="text-secondary-50/50 text-body-large font-medium">/ {formatTime(duration)}</span>
-                    </div>
+            {!showNativeControls && (
+                <div
+                    className={cn(
+                        "absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/60 to-transparent transition-opacity duration-300 rounded-2xl pointer-events-none",
+                        showControls || !isPlaying ? "opacity-100" : "opacity-0"
+                    )}
+                >
+                    <div className="flex items-center gap-3 controls-area pointer-events-auto">
+                        {/* Time */}
+                        <div className="bg-black/30 backdrop-blur-md px-3 py-2 rounded-full flex items-center gap-2 border border-secondary-500/30">
+                            <span className="text-secondary-50 text-body-large font-medium">{formatTime(currentTime)}</span>
+                            <span className="text-secondary-50/50 text-body-large font-medium">/ {formatTime(duration)}</span>
+                        </div>
 
-                    {/* Volume */}
-                    <button
-                        onClick={toggleMute}
-                        className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full flex items-center border border-secondary-500/30 hover:bg-black/40 cursor-pointer transition-colors"
-                    >
-                        {isMuted ? <VolumeX className="w-6 h-6 text-secondary-50" /> : <VolumeIcon />}
-                    </button>
-
-                    {/* Speed */}
-                    <div className="relative ml-auto">
+                        {/* Volume */}
                         <button
-                            onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                            className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-1 border border-secondary-500/30 hover:bg-black/40 cursor-pointer transition-colors"
+                            onClick={toggleMute}
+                            className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full flex items-center border border-secondary-500/30 hover:bg-black/40 cursor-pointer transition-colors"
                         >
-                            <ClockIcon />
-                            <span className="text-secondary-50 text-body-large font-medium">{playbackRate}배</span>
+                            {isMuted ? <VolumeX className="w-6 h-6 text-secondary-50" /> : <VolumeIcon />}
                         </button>
 
-                        {showSpeedMenu && (
-                            <div className="absolute bottom-full mb-2 right-0 bg-black/90 backdrop-blur-md rounded-lg p-2 min-w-[80px] flex flex-col gap-1">
-                                {PLAYBACK_SPEEDS.map((speed) => (
-                                    <button
-                                        key={speed}
-                                        onClick={() => handleSpeedChange(speed)}
-                                        className={cn(
-                                            "px-3 py-2 text-sm rounded-lg hover:bg-white/20 transition-colors text-left",
-                                            playbackRate === speed ? "text-primary-500 font-bold bg-white/10" : "text-white"
-                                        )}
-                                    >
-                                        {speed}배
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                        {/* Speed */}
+                        <div className="relative ml-auto">
+                            <button
+                                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                                className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-1 border border-secondary-500/30 hover:bg-black/40 cursor-pointer transition-colors"
+                            >
+                                <ClockIcon />
+                                <span className="text-secondary-50 text-body-large font-medium">{playbackRate}배</span>
+                            </button>
+
+                            {showSpeedMenu && (
+                                <div className="absolute bottom-full mb-2 right-0 bg-black/90 backdrop-blur-md rounded-lg p-2 min-w-[80px] flex flex-col gap-1">
+                                    {PLAYBACK_SPEEDS.map((speed) => (
+                                        <button
+                                            key={speed}
+                                            onClick={() => handleSpeedChange(speed)}
+                                            className={cn(
+                                                "px-3 py-2 text-sm rounded-lg hover:bg-white/20 transition-colors text-left",
+                                                playbackRate === speed ? "text-primary-500 font-bold bg-white/10" : "text-white"
+                                            )}
+                                        >
+                                            {speed}배
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

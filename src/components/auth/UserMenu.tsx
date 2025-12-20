@@ -10,22 +10,43 @@ import {
     DropdownMenuTrigger,
 } from '../../../ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../ui/avatar';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function UserMenu() {
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
 
     useEffect(() => {
         const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (error) {
+                    console.error('Failed to get user:', error);
+                }
+                setUser(user);
+            } catch (error) {
+                console.error('Failed to get user:', error);
+            } finally {
+                setIsLoading(false);
+            }
         };
         getUser();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            (_event, session) => {
+                setUser(session?.user ?? null);
+                setIsLoading(false);
+            }
+        );
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, [supabase]);
 
     const handleLogout = async () => {
@@ -33,6 +54,12 @@ export default function UserMenu() {
         router.push('/signup');
         router.refresh();
     };
+
+    if (isLoading) {
+        return (
+            <div className="w-10 h-10 rounded-full bg-neutral-200 animate-pulse" />
+        );
+    }
 
     if (!user) return null;
 

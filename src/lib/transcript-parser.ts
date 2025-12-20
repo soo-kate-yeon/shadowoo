@@ -1,4 +1,5 @@
 import { TranscriptItem, Sentence } from '@/types';
+export type { TranscriptItem, Sentence };
 
 /**
  * Parse transcript items and merge them into sentences
@@ -10,6 +11,12 @@ import { TranscriptItem, Sentence } from '@/types';
  * 5. Word count (15+ words)
  */
 export function parseTranscriptToSentences(transcriptItems: TranscriptItem[]): Sentence[] {
+    // If first item has no timestamp (e.g. from raw text), use raw text parser
+    if (transcriptItems.length > 0 && typeof transcriptItems[0].start !== 'number') {
+        // @ts-ignore - Handle raw text masquerading as TranscriptItem
+        return parseRawTextToSentences(transcriptItems.map(i => i.text).join(' '));
+    }
+
     const sentences: Sentence[] = [];
     let currentSentence = '';
     let currentStartTime = 0;
@@ -193,4 +200,61 @@ export function groupSentencesByMode(
     console.log('📦 [Grouping] Mode:', mode, 'Original:', sentences.length, 'Grouped:', paragraphs.length);
 
     return paragraphs;
+}
+
+/**
+ * Parse raw text into meaningful sentences for manual syncing
+ * Handles newlines as potential breaks, but prioritizes punctuation
+ */
+export function parseRawTextToSentences(rawText: string): Sentence[] {
+    if (!rawText) return [];
+
+    // 1. Normalize line endings and remove extra spaces
+    const normalized = rawText.replace(/\r\n/g, '\n').trim();
+
+    // 2. Split by double newlines (paragraphs) first, then single newlines
+    const lines = normalized.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    const sentences: Sentence[] = [];
+
+    // 3. Process each line
+    lines.forEach((line) => {
+        // Simple regex to split by .!? followed by space or end of string
+        // But keep the punctuation
+        const splitPattern = /([.!?]+)(?=\s|$)/g;
+
+        let match;
+        let lastIndex = 0;
+
+        // Find all punctuation
+        while ((match = splitPattern.exec(line)) !== null) {
+            const endIndex = match.index + match[0].length;
+            const text = line.substring(lastIndex, endIndex).trim();
+
+            if (text) {
+                sentences.push({
+                    id: crypto.randomUUID(),
+                    text,
+                    startTime: 0, // To be filled by Sync Editor
+                    endTime: 0,
+                    highlights: []
+                });
+            }
+            lastIndex = endIndex;
+        }
+
+        // Add remaining text if any
+        const remaining = line.substring(lastIndex).trim();
+        if (remaining) {
+            sentences.push({
+                id: crypto.randomUUID(),
+                text: remaining,
+                startTime: 0,
+                endTime: 0,
+                highlights: []
+            });
+        }
+    });
+
+    return sentences;
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useStore } from '@/lib/store';
+import { groupSentencesByMode } from '@/lib/transcript-parser';
 import { Sentence } from '@/types';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import { ShadowingHeader } from '@/components/shadowing/ShadowingHeader';
@@ -16,6 +16,8 @@ export default function ShadowingPage() {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [videoData, setVideoData] = useState<any>(null);
+    const [rawSentences, setRawSentences] = useState<Sentence[]>([]);
     const [sentences, setSentences] = useState<Sentence[]>([]);
     const [mode, setMode] = useState<"sentence" | "paragraph" | "total">("sentence");
 
@@ -24,21 +26,21 @@ export default function ShadowingPage() {
     const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
     const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const getVideo = useStore((state) => state.getVideo);
-    const video = getVideo(videoId);
-
     useEffect(() => {
         if (!videoId) return;
 
-        const fetchTranscript = async () => {
+        const fetchCuratedData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/transcript?videoId=${videoId}&mode=${mode}`);
+                const response = await fetch(`/api/curated-videos/${videoId}`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch transcript');
+                    throw new Error('Failed to fetch curated video');
                 }
                 const data = await response.json();
-                setSentences(data.sentences);
+                setVideoData(data);
+                setRawSentences(data.transcript);
+                // Apply initial grouping
+                setSentences(groupSentencesByMode(data.transcript, mode));
             } catch (err) {
                 console.error(err);
                 setError('Failed to load session');
@@ -47,8 +49,15 @@ export default function ShadowingPage() {
             }
         };
 
-        fetchTranscript();
-    }, [videoId, mode]);
+        fetchCuratedData();
+    }, [videoId]);
+
+    // Re-group when mode changes
+    useEffect(() => {
+        if (rawSentences.length > 0) {
+            setSentences(groupSentencesByMode(rawSentences, mode));
+        }
+    }, [mode, rawSentences]);
 
     const handlePlayerReady = (playerInstance: YT.Player) => {
         setPlayer(playerInstance);
@@ -105,7 +114,7 @@ export default function ShadowingPage() {
         <div className="h-screen bg-secondary-200 flex flex-col overflow-hidden relative">
             {/* Header */}
             <ShadowingHeader
-                title={video?.title || 'Unknown Video'}
+                title={videoData?.title || 'Loading...'}
                 onBack={() => router.push('/home')}
                 onPrevStep={() => router.push(`/session/${videoId}`)}
                 onNextStep={() => { }} // TODO: Next step
@@ -125,6 +134,8 @@ export default function ShadowingPage() {
                             className="w-full h-full"
                             onReady={handlePlayerReady}
                             disableSpacebarControl={true}
+                            startSeconds={videoData?.snippet_start_time}
+                            endSeconds={videoData?.snippet_end_time}
                         />
                     </div>
                 </div>

@@ -31,53 +31,62 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Parse transcript text with timestamps
-        const lines = transcript_text.split('\n').map((l: string) => l.trim()).filter((l: string) => l);
 
-        const transcriptItems = [];
-        let currentItem: { text: string; start: number; duration: number; offset: number; lang: string } | null = null;
+        let sentences = [];
 
-        for (const line of lines) {
-            // Check for timestamp-only line: "8:55", "1:08:55"
-            const timestampOnlyMatch = line.match(/^(?:(\d+):)?(\d+):(\d+)$/);
+        // Check if pre-parsed/synced transcript is provided
+        if (body.transcript && Array.isArray(body.transcript)) {
+            console.log('📦 Using pre-parsed transcript from request');
+            sentences = body.transcript;
+        } else {
+            // Parse transcript text with timestamps
+            const lines = transcript_text.split('\n').map((l: string) => l.trim()).filter((l: string) => l);
 
-            // Check for inline format: "8:55 text here"
-            const inlineMatch = line.match(/^(?:(\d+):)?(\d+):(\d+)\s+(.+)$/);
+            const transcriptItems = [];
+            let currentItem: { text: string; start: number; duration: number; offset: number; lang: string } | null = null;
 
-            if (timestampOnlyMatch || inlineMatch) {
-                if (currentItem) transcriptItems.push(currentItem);
+            for (const line of lines) {
+                // Check for timestamp-only line: "8:55", "1:08:55"
+                const timestampOnlyMatch = line.match(/^(?:(\d+):)?(\d+):(\d+)$/);
 
-                const match = timestampOnlyMatch || inlineMatch;
-                const hours = match[1] ? parseInt(match[1]) : 0;
-                const minutes = parseInt(match[2]);
-                const seconds = parseInt(match[3]);
-                const timeInSeconds = hours * 3600 + minutes * 60 + seconds;
-                const text = inlineMatch ? inlineMatch[4].trim() : "";
+                // Check for inline format: "8:55 text here"
+                const inlineMatch = line.match(/^(?:(\d+):)?(\d+):(\d+)\s+(.+)$/);
 
-                currentItem = {
-                    text: text,
-                    start: timeInSeconds,
-                    duration: 2, // Default duration, will be adjusted by parser
-                    offset: timeInSeconds,
-                    lang: 'en'
-                };
-            } else if (currentItem) {
-                currentItem.text += (currentItem.text ? ' ' : '') + line;
+                if (timestampOnlyMatch || inlineMatch) {
+                    if (currentItem) transcriptItems.push(currentItem);
+
+                    const match = timestampOnlyMatch || inlineMatch;
+                    const hours = match[1] ? parseInt(match[1]) : 0;
+                    const minutes = parseInt(match[2]);
+                    const seconds = parseInt(match[3]);
+                    const timeInSeconds = hours * 3600 + minutes * 60 + seconds;
+                    const text = inlineMatch ? inlineMatch[4].trim() : "";
+
+                    currentItem = {
+                        text: text,
+                        start: timeInSeconds,
+                        duration: 2, // Default duration, will be adjusted by parser
+                        offset: timeInSeconds,
+                        lang: 'en'
+                    };
+                } else if (currentItem) {
+                    currentItem.text += (currentItem.text ? ' ' : '') + line;
+                }
             }
+            if (currentItem) transcriptItems.push(currentItem);
+
+            if (transcriptItems.length === 0) {
+                return NextResponse.json(
+                    { error: 'No valid timestamped transcript found. Please keep timestamps ON when copying from YouTube.' },
+                    { status: 400 }
+                );
+            }
+
+            console.log(`✅ Parsed ${transcriptItems.length} transcript items`);
+
+            // Convert items to sentences
+            sentences = parseTranscriptToSentences(transcriptItems);
         }
-        if (currentItem) transcriptItems.push(currentItem);
-
-        if (transcriptItems.length === 0) {
-            return NextResponse.json(
-                { error: 'No valid timestamped transcript found. Please keep timestamps ON when copying from YouTube.' },
-                { status: 400 }
-            );
-        }
-
-        console.log(`✅ Parsed ${transcriptItems.length} transcript items`);
-
-        // Convert items to sentences
-        const sentences = parseTranscriptToSentences(transcriptItems);
 
         // Fetch video metadata
         const title = `Video ${video_id}`;
