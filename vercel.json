@@ -3,13 +3,9 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["icn1"],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
-    "GOOGLE_GENERATIVE_AI_API_KEY": "@google-ai-api-key"
-  },
+  "regions": [
+    "icn1"
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
