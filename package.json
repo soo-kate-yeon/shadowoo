@@ -28,6 +28,7 @@
     "deploy:preview": "vercel"
   },
   "dependencies": {
+    "@danielxceron/youtube-transcript": "^1.2.3",
     "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
