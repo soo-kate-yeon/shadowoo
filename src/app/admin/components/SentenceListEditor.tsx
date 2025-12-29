@@ -10,6 +10,8 @@ interface SentenceListEditorProps {
     onUpdateTime: (id: string, field: 'startTime' | 'endTime', value: number) => void;
     onUpdateText: (id: string, field: 'text' | 'translation', value: string) => void;
     onDelete: (index: number) => void;
+    onSplit: (index: number, cursorPosition: number) => void;
+    onMergeWithPrevious: (index: number) => void;
     onStartSessionCreation: () => void;
 }
 
@@ -22,6 +24,8 @@ export function SentenceListEditor({
     onUpdateTime,
     onUpdateText,
     onDelete,
+    onSplit,
+    onMergeWithPrevious,
     onStartSessionCreation
 }: SentenceListEditorProps) {
     return (
@@ -61,6 +65,8 @@ export function SentenceListEditor({
                         onUpdateTime={onUpdateTime}
                         onUpdateText={onUpdateText}
                         onDelete={onDelete}
+                        onSplit={onSplit}
+                        onMergeWithPrevious={onMergeWithPrevious}
                     />
                 ))}
                 {sentences.length === 0 && (

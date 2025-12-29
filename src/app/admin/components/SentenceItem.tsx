@@ -6,18 +6,32 @@ interface SentenceItemProps {
     onUpdateTime: (id: string, field: 'startTime' | 'endTime', value: number) => void;
     onUpdateText: (id: string, field: 'text' | 'translation', value: string) => void;
     onDelete: (index: number) => void;
+    onSplit: (index: number, cursorPosition: number) => void;
+    onMergeWithPrevious: (index: number) => void;
 }
 
-export function SentenceItem({ sentence, index, onUpdateTime, onUpdateText, onDelete }: SentenceItemProps) {
+export function SentenceItem({ sentence, index, onUpdateTime, onUpdateText, onDelete, onSplit, onMergeWithPrevious }: SentenceItemProps) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === ']') {
+            e.preventDefault();
+            const target = e.target as HTMLTextAreaElement;
+            onSplit(index, target.selectionStart);
+        } else if (e.key === '[') {
+            e.preventDefault();
+            onMergeWithPrevious(index);
+        }
+    };
+
     return (
         <div className="bg-secondary-50 rounded-xl p-4 border border-secondary-100 hover:border-secondary-300 transition-all group">
             <div className="flex gap-4 items-start">
                 <span className="text-xs font-mono text-secondary-400 mt-1.5 w-6">#{index + 1}</span>
                 <div className="flex-1 space-y-3">
-                    {/* Textarea for Wrapping */}
+                    {/* Textarea for Wrapping - Press ] to split, [ to merge */}
                     <textarea
                         value={sentence.text}
                         onChange={e => onUpdateText(sentence.id, 'text', e.target.value)}
+                        onKeyDown={handleKeyDown}
                         rows={1}
                         onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
@@ -25,7 +39,7 @@ export function SentenceItem({ sentence, index, onUpdateTime, onUpdateText, onDe
                             target.style.height = target.scrollHeight + 'px';
                         }}
                         className="w-full bg-transparent font-medium text-lg text-secondary-900 focus:outline-none border-b border-transparent focus:border-secondary-300 pb-1 resize-none overflow-hidden"
-                        placeholder="Original Sentence"
+                        placeholder="Original Sentence (] to split, [ to merge)"
                     />
                     <input
                         value={sentence.translation || ''}

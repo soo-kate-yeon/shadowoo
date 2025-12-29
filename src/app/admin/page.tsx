@@ -47,7 +47,9 @@ function AdminPageContent() {
         setSentences,
         updateSentenceTime,
         updateSentenceText,
-        deleteSentence
+        deleteSentence,
+        splitSentence,
+        mergeWithPrevious
     } = useSentenceEditor([]);
     const [player, setPlayer] = useState<YT.Player | null>(null);
     const [currentTime, setCurrentTime] = useState(0);
@@ -463,6 +465,8 @@ function AdminPageContent() {
                             onUpdateTime={updateSentenceTime}
                             onUpdateText={updateSentenceText}
                             onDelete={deleteSentence}
+                            onSplit={splitSentence}
+                            onMergeWithPrevious={mergeWithPrevious}
                             onStartSessionCreation={handleStartSessionCreation}
                         />
 
