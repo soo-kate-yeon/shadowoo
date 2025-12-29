@@ -74,13 +74,16 @@ export async function POST(request: NextRequest) {
                 .from('learning_sessions')
                 .upsert(sessionsToUpsert);
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ [API] Upsert error:', error);
+                throw error;
+            }
         }
 
         return NextResponse.json({ success: true });
 
     } catch (error: any) {
-        console.error('Session creation error:', error);
+        console.error('❌ [API] Session creation error:', error);
         return NextResponse.json(
             { error: error.message || 'Internal server error' },
             { status: 500 }
