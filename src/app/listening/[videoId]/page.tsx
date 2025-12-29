@@ -150,18 +150,6 @@ export default function ListeningPage() {
         removeHighlight(id);
     };
 
-    const handleRestoreHighlight = (highlight: Highlight) => {
-        if (highlight.id) {
-            addHighlight({
-                id: highlight.id,
-                videoId,
-                originalText: highlight.text,
-                userNote: highlight.comment,
-                createdAt: Date.now()
-            });
-        }
-    };
-
     const handleLoopToggle = (sentenceId: string, isLooping: boolean) => {
         if (isLooping) {
             setLoopingSentenceId(sentenceId);

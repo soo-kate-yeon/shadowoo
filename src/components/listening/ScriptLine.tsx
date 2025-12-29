@@ -3,10 +3,16 @@
 import { useState, useRef, useEffect } from "react";
 import { Sentence } from "@/types";
 import { CommentPopover } from "./CommentPopover";
-import { AnalysisPanel, Highlight } from "./AnalysisPanel";
+import { CommentTooltip } from "./CommentTooltip";
 import LoopToggle from "./LoopToggle";
 import SaveToggle from "./SaveToggle";
 import { useStore } from "@/lib/store";
+
+export interface Highlight {
+    id: string;
+    text: string;
+    comment: string;
+}
 
 interface ScriptLineProps {
     sentence: Sentence;
@@ -14,14 +20,11 @@ interface ScriptLineProps {
     videoId: string;
     isActive: boolean;
     isLooping: boolean;
-    expanded: boolean;
     highlights: Highlight[];
-    onToggleExpand: () => void;
     onAddHighlight: (text: string, comment: string) => void;
     onSeek: (startTime: number) => void;
     onLoopToggle: (sentenceId: string, isLooping: boolean) => void;
     onRemoveHighlight?: (id: string) => void;
-    onRestoreHighlight?: (highlight: Highlight) => void;
 }
 
 export function ScriptLine({
@@ -30,16 +33,14 @@ export function ScriptLine({
     videoId,
     isActive,
     isLooping,
-    expanded,
     highlights,
-    onToggleExpand,
     onAddHighlight,
     onSeek,
     onLoopToggle,
-    onRemoveHighlight,
-    onRestoreHighlight
+    onRemoveHighlight
 }: ScriptLineProps) {
     const [selection, setSelection] = useState<{ text: string } | null>(null);
+    const [showTooltip, setShowTooltip] = useState<Highlight | null>(null);
     const activeRef = useRef<HTMLDivElement>(null);
 
     // Store actions for saved sentences
@@ -50,7 +51,7 @@ export function ScriptLine({
     // Check if this sentence is saved
     const isSaved = savedSentences.some((s) => s.sentenceId === sentence.id);
 
-    // Close popover when active state changes (e.g. another sentence starts playing)
+    // Close popover when active state changes
     useEffect(() => {
         if (!isActive) {
             setSelection(null);
@@ -62,21 +63,9 @@ export function ScriptLine({
         const text = sel?.toString().trim();
 
         if (text && text.length > 0) {
-            // Ensure we are selecting within this component
             if (activeRef.current && sel?.anchorNode && activeRef.current.contains(sel.anchorNode)) {
                 setSelection({ text });
-                // If not expanded, expand it to show context
-                if (!expanded) {
-                    onToggleExpand();
-                }
             }
-        }
-    };
-
-    const handleExpandToggle = () => {
-        // Only toggle if we are NOT selecting text
-        if (!selection) {
-            onToggleExpand();
         }
     };
 
@@ -84,14 +73,12 @@ export function ScriptLine({
         if (selection) {
             onAddHighlight(selection.text, comment);
             setSelection(null);
-            // Clear selection
             window.getSelection()?.removeAllRanges();
         }
     };
 
     const handleSaveToggle = (sentenceId: string, shouldSave: boolean) => {
         if (shouldSave) {
-            // Add to saved sentences
             addSavedSentence({
                 id: crypto.randomUUID(),
                 videoId: videoId,
@@ -102,12 +89,15 @@ export function ScriptLine({
                 createdAt: Date.now()
             });
         } else {
-            // Remove from saved sentences
             const savedSentence = savedSentences.find((s) => s.sentenceId === sentenceId);
             if (savedSentence) {
                 removeSavedSentence(savedSentence.id);
             }
         }
+    };
+
+    const handleHighlightClick = (highlight: Highlight) => {
+        setShowTooltip(showTooltip?.id === highlight.id ? null : highlight);
     };
 
     // Helper to render text with highlights
@@ -125,7 +115,11 @@ export function ScriptLine({
                         newParts.push(split[i]);
                         if (i < split.length - 1) {
                             newParts.push(
-                                <span key={`${h.text}-${i}`} className="bg-accent-yellow">
+                                <span
+                                    key={`${h.id}-${i}`}
+                                    className="bg-accent-yellow cursor-pointer hover:bg-accent-highlight transition-colors"
+                                    onClick={() => handleHighlightClick(h)}
+                                >
                                     {h.text}
                                 </span>
                             );
@@ -144,7 +138,7 @@ export function ScriptLine({
     return (
         <div
             ref={activeRef}
-            className="flex flex-col gap-4"
+            className="relative"
         >
             {/* Script Line */}
             <div className="relative group">
@@ -158,15 +152,13 @@ export function ScriptLine({
                     <p
                         onMouseUp={handleMouseUp}
                         onClick={() => {
-                            handleExpandToggle();
-                            // Also seek when clicking the line (if not selecting)
                             if (!selection) {
                                 onSeek(sentence.startTime);
                             }
                         }}
                         className={`
                             flex-1 text-lg leading-relaxed cursor-pointer transition-colors select-text
-                            ${expanded || isActive ? "font-semibold text-neutral-900" : "font-medium text-secondary-500 hover:text-secondary-600"}
+                            ${isActive ? "font-semibold text-neutral-900" : "font-medium text-secondary-500 hover:text-secondary-600"}
                         `}
                     >
                         {selection ? (
@@ -196,28 +188,23 @@ export function ScriptLine({
                     </div>
                 </div>
 
-                {/* Comment Popover */}
+                {/* Comment Popover for new selections */}
                 {selection && (
                     <CommentPopover
                         onSubmit={handleCommentSubmit}
                         onClose={() => setSelection(null)}
                     />
                 )}
-            </div>
 
-            {/* Analysis Panel (Accordion) */}
-            {expanded && (
-                <div className="pl-10">
-                    <AnalysisPanel
-                        highlights={highlights}
-                        videoId={videoId}
-                        sentenceId={sentence.id}
-                        sentenceText={sentence.text}
-                        onRemoveHighlight={onRemoveHighlight}
-                        onRestoreHighlight={onRestoreHighlight}
+                {/* Comment Tooltip for existing highlights */}
+                {showTooltip && (
+                    <CommentTooltip
+                        originalText={showTooltip.text}
+                        comment={showTooltip.comment}
+                        onClose={() => setShowTooltip(null)}
                     />
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
