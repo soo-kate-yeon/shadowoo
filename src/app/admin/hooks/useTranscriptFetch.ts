@@ -66,12 +66,19 @@ export function useTranscriptFetch(): UseTranscriptFetchReturn {
             // Fetch transcript data from API if available (for timestamps)
             let transcriptItems: TranscriptItem[] = [];
 
+            console.log('🔍 [parseScript] Starting parse:', { videoId, rawScriptLength: rawScript.length, rawScriptPreview: rawScript.substring(0, 100) });
+
             if (videoId) {
                 try {
                     const res = await fetch(`/api/admin/transcript?videoId=${videoId}`);
                     if (res.ok) {
                         const { transcript } = await res.json();
-                        transcriptItems = transcript;
+                        // Map 'offset' to 'start' if API returns offset instead of start
+                        transcriptItems = transcript.map((item: any) => ({
+                            ...item,
+                            start: item.start ?? item.offset ?? 0,
+                        }));
+                        console.log('✅ [parseScript] Fetched transcript items:', transcriptItems.length);
                     }
                 } catch (err) {
                     // If API fails, continue with manual parsing
@@ -80,9 +87,13 @@ export function useTranscriptFetch(): UseTranscriptFetchReturn {
             }
 
             // Parse using transcript-parser logic
+            console.log('📝 [parseScript] Using:', transcriptItems.length > 0 ? 'parseTranscriptToSentences' : 'parseRawTextToSentences');
+
             const parsedSentences = transcriptItems.length > 0
                 ? parseTranscriptToSentences(transcriptItems)
                 : parseRawTextToSentences(rawScript);
+
+            console.log('✅ [parseScript] Result:', parsedSentences.length, 'sentences');
 
             return parsedSentences;
         } catch (err: any) {
