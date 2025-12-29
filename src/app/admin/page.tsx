@@ -10,6 +10,9 @@ import { useTranscriptFetch } from './hooks/useTranscriptFetch';
 import { SentenceItem } from './components/SentenceItem';
 import { VideoListModal } from './components/VideoListModal';
 import { AdminHeader } from './components/AdminHeader';
+import { VideoPlayerPanel } from './components/VideoPlayerPanel';
+import { RawScriptEditor } from './components/RawScriptEditor';
+import { SentenceListEditor } from './components/SentenceListEditor';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import { createClient } from '@/utils/supabase/client';
 
@@ -375,115 +378,35 @@ function AdminPageContent() {
                 )}
 
                 <div className="flex gap-6 flex-1 min-h-0">
-                    {/* Left: Player */}
-                    <div className="w-[45%] flex flex-col gap-4">
-                        <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-lg shrink-0 border border-secondary-900/10">
-                            {getVideoId() ? (
-                                <YouTubePlayer
-                                    videoId={getVideoId() || ''}
-                                    className="w-full h-full"
-                                    onReady={handlePlayerReady}
-                                    onTimeUpdate={handleTimeUpdate}
-                                    showNativeControls={true}
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-secondary-500">
-                                    Enter URL to load video
-                                </div>
-                            )}
-                        </div>
+                    <VideoPlayerPanel
+                        videoId={getVideoId()}
+                        currentTime={currentTime}
+                        lastSyncTime={lastSyncTime}
+                        onReady={handlePlayerReady}
+                        onTimeUpdate={handleTimeUpdate}
+                    />
 
-                        <div className="bg-surface p-6 rounded-2xl flex-1 overflow-y-auto shadow-sm">
-                            <h3 className="font-bold mb-3 text-secondary-900">How to Sync</h3>
-                            <ul className="space-y-2 text-sm text-secondary-600 mb-6 list-disc pl-4">
-                                <li><strong>Paste script</strong> into the top-right editor.</li>
-                                <li>Play video. Click in the text where the sentence ends.</li>
-                                <li>Press <kbd className="bg-primary-100 text-primary-700 px-1.5 py-0.5 rounded font-bold">]</kbd> key.</li>
-                                <li>Use <strong>Auto Translate</strong> to fill Korean meanings.</li>
-                            </ul>
-
-                            <div className="bg-secondary-50 p-4 rounded-xl border border-secondary-200">
-                                <div className="flex justify-between text-sm mb-2">
-                                    <span className="text-secondary-500">Current Time</span>
-                                    <span className="font-mono font-bold text-primary-600 text-lg">{currentTime.toFixed(2)}s</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-secondary-500">Last Sync Time</span>
-                                    <span className="font-mono text-secondary-700">{lastSyncTime.toFixed(2)}s</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right: Script Editor */}
                     <div className="w-[55%] flex flex-col gap-4 min-h-0">
-                        {/* Top: Raw Script Input */}
-                        <div className="h-1/3 flex flex-col bg-surface rounded-2xl border-2 border-primary-100 shadow-sm overflow-hidden focus-within:border-primary-400 transition-colors relative">
-                            <div className="absolute top-0 left-0 bg-primary-100 text-primary-800 text-xs px-3 py-1 font-bold rounded-br-lg z-10 flex items-center gap-2">
-                                Step 1: Raw Script
-                                <button
-                                    onClick={handleFetchTranscript}
-                                    disabled={loading || !youtubeUrl}
-                                    className="bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide transition-colors"
-                                    title="Fetch transcript from YouTube"
-                                >
-                                    🎬 Fetch Transcript
-                                </button>
-                                <button
-                                    onClick={() => setRawScript(prev => prev.replace(/\n/g, ' ').replace(/\s+/g, ' '))}
-                                    className="bg-white hover:bg-white/80 text-primary-600 px-2 py-0.5 rounded text-[10px] uppercase tracking-wide border border-primary-200 transition-colors"
-                                    title="Remove line breaks"
-                                >
-                                    Normalize Spacing
-                                </button>
-                            </div>
-                            <textarea
-                                ref={scriptRef}
-                                value={rawScript}
-                                onChange={(e) => setRawScript(e.target.value)}
-                                className="w-full h-full p-6 pt-8 resize-none focus:outline-none text-lg leading-relaxed text-secondary-800 placeholder:text-secondary-300"
-                                placeholder="Paste your full transcript here... Click where sentence ends and press ] to sync."
-                            />
-                        </div>
+                        <RawScriptEditor
+                            rawScript={rawScript}
+                            loading={loading}
+                            youtubeUrl={youtubeUrl}
+                            onChange={setRawScript}
+                            onFetchTranscript={handleFetchTranscript}
+                            onNormalizeSpacing={() => setRawScript(prev => prev.replace(/\n/g, ' ').replace(/\s+/g, ' '))}
+                            scriptRef={scriptRef}
+                        />
 
-                        {/* Bottom: Parsed List */}
-                        <div className="flex-1 bg-surface rounded-2xl border border-secondary-200 shadow-sm overflow-hidden flex flex-col relative">
-                            <div className="absolute top-0 left-0 bg-secondary-200 text-secondary-800 text-xs px-3 py-1 font-bold rounded-br-lg z-10 flex gap-2 items-center">
-                                Step 2: Parsed Sentences ({sentences.length})
-                                <button
-                                    onClick={handleParseScript}
-                                    disabled={loading || !rawScript.trim()}
-                                    className="bg-secondary-700 hover:bg-secondary-800 disabled:opacity-50 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide transition-colors"
-                                    title="Parse raw script into sentences"
-                                >
-                                    📝 Parse Script
-                                </button>
-                                <button
-                                    onClick={handleAutoTranslate}
-                                    disabled={loading || sentences.length === 0}
-                                    className="bg-primary-500 hover:bg-primary-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide transition-colors"
-                                >
-                                    Auto Translate
-                                </button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-4 pt-10 space-y-3">
-                                {sentences.map((s, idx) => (
-                                    <SentenceItem
-                                        key={s.id}
-                                        sentence={s}
-                                        index={idx}
-                                        onUpdateTime={updateSentenceTime}
-                                        onUpdateText={updateSentenceText}
-                                        onDelete={deleteSentence}
-                                    />
-                                ))}
-                                {sentences.length === 0 && (
-                                    <div className="text-center text-secondary-400 py-10 italic">
-                                        Parsed sentences will appear here...
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <SentenceListEditor
+                            sentences={sentences}
+                            loading={loading}
+                            rawScript={rawScript}
+                            onParseScript={handleParseScript}
+                            onAutoTranslate={handleAutoTranslate}
+                            onUpdateTime={updateSentenceTime}
+                            onUpdateText={updateSentenceText}
+                            onDelete={deleteSentence}
+                        />
                     </div>
                 </div>
             </div>
