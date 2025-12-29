@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { parseTranscriptToSentences } from '@/lib/transcript-parser';
+import { parseTranscriptToSentences, parseRawTextToSentences } from '@/lib/transcript-parser';
 import type { TranscriptItem } from '@/lib/transcript-parser';
 import { Sentence } from '@/types';
 
@@ -82,7 +82,7 @@ export function useTranscriptFetch(): UseTranscriptFetchReturn {
             // Parse using transcript-parser logic
             const parsedSentences = transcriptItems.length > 0
                 ? parseTranscriptToSentences(transcriptItems)
-                : parseTranscriptToSentences([{ text: rawScript, start: 0, duration: 0, offset: 0, lang: 'en' }]);
+                : parseRawTextToSentences(rawScript);
 
             return parsedSentences;
         } catch (err: any) {

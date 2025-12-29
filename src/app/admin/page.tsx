@@ -432,7 +432,7 @@ function AdminPageContent() {
                         onTimeUpdate={handleTimeUpdate}
                     />
 
-                    <div className="w-[55%] flex flex-col gap-4 min-h-0">
+                    <div className="w-[55%] flex flex-col gap-4 min-h-0 overflow-y-auto pb-10">
                         <RawScriptEditor
                             rawScript={rawScript}
                             loading={loading}
