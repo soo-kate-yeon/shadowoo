@@ -189,6 +189,51 @@ function AdminPageContent() {
     };
 
 
+    // --- Fetch Transcript Logic ---
+    const handleFetchTranscript = async () => {
+        const videoId = getVideoId();
+        if (!videoId) {
+            setError('Please enter a valid YouTube URL first');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const res = await fetch(`/api/admin/transcript?videoId=${videoId}`);
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'Failed to fetch transcript');
+            }
+
+            const { transcript } = await res.json();
+
+            // Convert transcript to Sentence format
+            const newSentences: Sentence[] = transcript.map((item: any) => ({
+                id: crypto.randomUUID(),
+                text: item.text,
+                startTime: item.offset / 1000, // Convert ms to seconds
+                endTime: (item.offset + item.duration) / 1000,
+                highlights: []
+            }));
+
+            setSentences(newSentences);
+            setLastSyncTime(newSentences[newSentences.length - 1]?.endTime || 0);
+
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 2000);
+
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
     // --- Sync Logic ---
     const handleSyncTrigger = () => {
         if (!player || !scriptRef.current) return;
@@ -448,6 +493,14 @@ function AdminPageContent() {
                         <div className="h-1/3 flex flex-col bg-surface rounded-2xl border-2 border-primary-100 shadow-sm overflow-hidden focus-within:border-primary-400 transition-colors relative">
                             <div className="absolute top-0 left-0 bg-primary-100 text-primary-800 text-xs px-3 py-1 font-bold rounded-br-lg z-10 flex items-center gap-2">
                                 Step 1: Raw Script
+                                <button
+                                    onClick={handleFetchTranscript}
+                                    disabled={loading || !youtubeUrl}
+                                    className="bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide transition-colors"
+                                    title="Fetch transcript from YouTube"
+                                >
+                                    🎬 Fetch Transcript
+                                </button>
                                 <button
                                     onClick={() => setRawScript(prev => prev.replace(/\n/g, ' ').replace(/\s+/g, ' '))}
                                     className="bg-white hover:bg-white/80 text-primary-600 px-2 py-0.5 rounded text-[10px] uppercase tracking-wide border border-primary-200 transition-colors"
