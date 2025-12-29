@@ -9,6 +9,7 @@ import { useSentenceEditor } from './hooks/useSentenceEditor';
 import { useTranscriptFetch } from './hooks/useTranscriptFetch';
 import { SentenceItem } from './components/SentenceItem';
 import { VideoListModal } from './components/VideoListModal';
+import { AdminHeader } from './components/AdminHeader';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import { createClient } from '@/utils/supabase/client';
 
@@ -346,51 +347,20 @@ function AdminPageContent() {
     return (
         <div className="min-h-screen bg-secondary-200 p-8">
             <div className="max-w-[1600px] mx-auto h-[calc(100vh-64px)] flex flex-col">
-                <div className="mb-4 shrink-0 flex justify-between items-center bg-surface p-4 rounded-xl shadow-sm">
-                    <div>
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-heading-3 text-secondary-900 font-bold">Sync Editor & Translator</h1>
-                            <button
-                                onClick={fetchExistingVideos}
-                                className="text-xs bg-secondary-100 hover:bg-secondary-200 text-secondary-600 px-2 py-1 rounded border border-secondary-300 transition-colors"
-                            >
-                                📂 Load Existing
-                            </button>
-                        </div>
-                        <div className="flex gap-4 text-xs text-secondary-500 items-center mt-1">
-                            <span>Video: {youtubeUrl || 'None'}</span>
-                            {isDraftSaving ? (
-                                <span className="text-primary-600 animate-pulse">Saving draft...</span>
-                            ) : lastSaved ? (
-                                <span>Last saved: {lastSaved.toLocaleTimeString()}</span>
-                            ) : null}
-                        </div>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                        <input
-                            className="px-3 py-2 rounded-lg border border-secondary-300 w-64 text-sm"
-                            value={youtubeUrl}
-                            onChange={e => setYoutubeUrl(e.target.value)}
-                            placeholder="YouTube URL..."
-                        />
-                        <select
-                            className="px-3 py-2 rounded-lg border border-secondary-300 text-sm"
-                            value={difficulty}
-                            onChange={(e) => setDifficulty(e.target.value as any)}
-                        >
-                            <option value="beginner">Beginner</option>
-                            <option value="intermediate">Intermediate</option>
-                            <option value="advanced">Advanced</option>
-                        </select>
-                        <button
-                            onClick={handleSave}
-                            disabled={loading || sentences.length === 0}
-                            className="bg-primary-500 hover:bg-primary-600 text-surface font-bold py-2 px-6 rounded-lg disabled:opacity-50 text-sm transition-colors"
-                        >
-                            {loading ? 'Processing...' : 'Save & Publish'}
-                        </button>
-                    </div>
-                </div>
+                <AdminHeader
+                    youtubeUrl={youtubeUrl}
+                    difficulty={difficulty}
+                    tags={tags}
+                    isDraftSaving={isDraftSaving}
+                    lastSaved={lastSaved}
+                    loading={loading}
+                    sentencesCount={sentences.length}
+                    onYoutubeUrlChange={setYoutubeUrl}
+                    onDifficultyChange={setDifficulty}
+                    onTagsChange={setTags}
+                    onSave={handleSave}
+                    onLoadExisting={fetchExistingVideos}
+                />
 
                 {transcriptFetch.error && (
                     <div className="bg-error/10 border border-error rounded-lg p-3 mb-4 shrink-0">
