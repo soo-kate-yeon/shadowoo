@@ -137,7 +137,7 @@ export default function ShadowingPage() {
             <ShadowingHeader
                 title={videoData?.title || 'Loading...'}
                 onBack={() => router.push('/home')}
-                onPrevStep={() => router.push(`/session/${videoId}${sessionId ? `?sessionId=${sessionId}` : ''}`)}
+                onPrevStep={() => router.push(`/listening/${videoId}${sessionId ? `?sessionId=${sessionId}` : ''}`)}
                 onNextStep={() => { }} // TODO: Next step
             />
 

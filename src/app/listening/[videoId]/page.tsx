@@ -5,11 +5,12 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { Sentence, LearningSession } from '@/types';
 import YouTubePlayer from '@/components/YouTubePlayer';
-import { SessionHeader } from '@/components/session/SessionHeader';
-import { ScriptLine } from '@/components/session/ScriptLine';
-import { Highlight } from '@/components/session/AnalysisPanel';
+import { ListeningHeader } from '@/components/listening/ListeningHeader';
+import { ScriptLine } from '@/components/listening/ScriptLine';
+import { ScriptToggle } from '@/components/listening/ScriptToggle';
+import { Highlight } from '@/components/listening/AnalysisPanel';
 
-export default function SessionPage() {
+export default function ListeningPage() {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -20,14 +21,13 @@ export default function SessionPage() {
     const [error, setError] = useState<string | null>(null);
     const [sentences, setSentences] = useState<Sentence[]>([]);
     const [videoData, setVideoData] = useState<any>(null);
-    const [currentStep, setCurrentStep] = useState<1 | 2>(1); // Step 1: listen, Step 2: script
+    const [isScriptVisible, setIsScriptVisible] = useState(false); // Script toggle, default OFF
 
     const [player, setPlayer] = useState<YT.Player | null>(null);
     const [currentTime, setCurrentTime] = useState(0);
     const activeSentenceRef = useRef<HTMLDivElement>(null);
 
     // UI State
-    const [expandedId, setExpandedId] = useState<string | null>(null);
     const [loopingSentenceId, setLoopingSentenceId] = useState<string | null>(null);
 
     // Store
@@ -308,7 +308,7 @@ export default function SessionPage() {
     return (
         <div className="h-screen bg-secondary-200 flex flex-col overflow-hidden relative">
             {/* Header */}
-            <SessionHeader
+            <ListeningHeader
                 title={videoData?.title || 'Loading...'}
                 currentStep={currentStep}
                 onBack={() => router.push('/home')}

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-interface SessionHeaderProps {
+interface ListeningHeaderProps {
     title: string;
     currentStep?: number;
     onBack?: () => void;
@@ -11,7 +11,7 @@ interface SessionHeaderProps {
     onPrevStep?: () => void;
 }
 
-export function SessionHeader({ title, currentStep = 1, onBack, onNextStep, onPrevStep }: SessionHeaderProps) {
+export function ListeningHeader({ title, currentStep = 1, onBack, onNextStep, onPrevStep }: ListeningHeaderProps) {
     const router = useRouter();
 
     const handleBack = () => {
