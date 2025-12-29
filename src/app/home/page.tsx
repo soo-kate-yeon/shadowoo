@@ -19,7 +19,7 @@ export default function HomePage() {
     const [selectedVideoIds, setSelectedVideoIds] = useState<Set<string>>(new Set());
 
     // Curated videos state
-    const [curatedVideos, setCuratedVideos] = useState<CuratedVideo[]>([]);
+    const [learningSessions, setLearningSessions] = useState<any[]>([]); // Using any for now to match API response, or import LearningSession
     const [loading, setLoading] = useState(true);
     const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
 
@@ -29,9 +29,9 @@ export default function HomePage() {
         setIsMounted(true);
     }, []);
 
-    // Fetch curated videos
+    // Fetch learning sessions
     useEffect(() => {
-        const fetchVideos = async () => {
+        const fetchSessions = async () => {
             try {
                 setLoading(true);
                 const params = new URLSearchParams();
@@ -39,19 +39,19 @@ export default function HomePage() {
                     params.append('difficulty', selectedDifficulty);
                 }
 
-                const response = await fetch(`/api/curated-videos?${params}`);
-                if (!response.ok) throw new Error('Failed to fetch videos');
+                const response = await fetch(`/api/learning-sessions?${params}`);
+                if (!response.ok) throw new Error('Failed to fetch sessions');
 
                 const data = await response.json();
-                setCuratedVideos(data.videos || []);
+                setLearningSessions(data.sessions || []);
             } catch (error) {
-                console.error('Failed to load curated videos:', error);
+                console.error('Failed to load learning sessions:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchVideos();
+        fetchSessions();
     }, [selectedDifficulty]);
 
     // Derived State
@@ -68,7 +68,7 @@ export default function HomePage() {
             <main className="flex-1 max-w-[1920px] w-full mx-auto p-8 flex flex-col gap-6 h-[calc(100vh-80px)] overflow-hidden">
                 <div className="flex flex-row gap-6 items-start h-full">
 
-                    {/* Left Column: Curated Videos */}
+                    {/* Left Column: Learning Sessions */}
                     <section className="flex flex-col gap-4 w-[33%] h-full">
                         <div className="flex flex-col gap-4 shrink-0">
                             <h2 className="text-2xl font-semibold text-black">학습할 영상</h2>
@@ -109,39 +109,45 @@ export default function HomePage() {
                                 <div className="flex justify-center items-center h-40">
                                     <p className="text-secondary-500">Loading...</p>
                                 </div>
-                            ) : curatedVideos.length === 0 ? (
+                            ) : learningSessions.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-40 text-secondary-500">
-                                    <p>큐레이션된 영상이 없어요.</p>
+                                    <p>큐레이션된 학습 세션이 없어요.</p>
                                     <Link href="/admin" className="text-primary-500 hover:underline mt-2">
-                                        + 영상 추가하기
+                                        + 세션 추가하기
                                     </Link>
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-4 pb-4">
-                                    {curatedVideos.map((video) => (
-                                        <Link href={`/session/${video.video_id}`} key={video.id} className="block">
-                                            <div className="bg-surface rounded-2xl overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                                    {learningSessions.map((session) => (
+                                        <Link href={`/session/${session.source_video_id}`} key={session.id} className="block">
+                                            <div className="bg-surface rounded-2xl overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-transparent hover:border-primary-200">
                                                 <div className="aspect-video relative bg-secondary-300">
                                                     <img
-                                                        src={video.thumbnail_url || `https://img.youtube.com/vi/${video.video_id}/hqdefault.jpg`}
-                                                        alt={video.title}
+                                                        src={session.thumbnail_url}
+                                                        alt={session.title}
                                                         className="w-full h-full object-cover"
                                                     />
-                                                    <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-                                                        {Math.floor(video.snippet_duration / 60)}:{String(Math.floor(video.snippet_duration % 60)).padStart(2, '0')}
+                                                    <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded font-mono">
+                                                        {Math.floor(session.duration / 60)}:{String(Math.floor(session.duration % 60)).padStart(2, '0')}
+                                                    </div>
+                                                    <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 text-white text-xs rounded-full backdrop-blur-sm">
+                                                        Session
                                                     </div>
                                                 </div>
                                                 <div className="p-4">
-                                                    <h3 className="font-semibold text-secondary-900 line-clamp-2 mb-1">
-                                                        {video.title}
+                                                    <h3 className="font-semibold text-secondary-900 line-clamp-1 mb-1">
+                                                        {session.title}
                                                     </h3>
+                                                    <p className="text-sm text-secondary-500 line-clamp-2 mb-3 h-10">
+                                                        {session.description || 'No description available.'}
+                                                    </p>
                                                     <div className="flex items-center gap-2 text-sm text-secondary-600">
-                                                        {video.difficulty && (
-                                                            <span className="px-2 py-0.5 bg-primary-100 text-primary-700 rounded text-xs font-medium">
-                                                                {video.difficulty === 'beginner' ? '초급' : video.difficulty === 'intermediate' ? '중급' : '고급'}
+                                                        {session.difficulty && (
+                                                            <span className="px-2 py-0.5 bg-primary-100 text-primary-700 rounded text-xs font-medium capitalize">
+                                                                {session.difficulty}
                                                             </span>
                                                         )}
-                                                        <span>{video.transcript?.length || 0} sentences</span>
+                                                        <span>{session.sentence_ids?.length || 0} sentences</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -215,9 +221,10 @@ export default function HomePage() {
                             {recentSessions.length > 0 ? (
                                 <div className="flex flex-col gap-4 pb-4">
                                     {recentSessions.map((session) => {
-                                        // Find video info from curatedVideos if possible
-                                        const curatedVideo = curatedVideos.find(v => v.video_id === session.videoId);
+                                        // Find session info from learningSessions if possible
+                                        const learningSession = learningSessions.find(s => s.source_video_id === session.videoId);
                                         const isSelected = selectedVideoIds.has(session.videoId);
+
                                         return (
                                             <div
                                                 key={session.id}
@@ -225,8 +232,8 @@ export default function HomePage() {
                                                 className={`cursor-pointer ${isEditMode ? 'pointer-events-auto' : ''}`}
                                             >
                                                 <SessionCard
-                                                    title={curatedVideo?.title || `Video ${session.videoId}`}
-                                                    thumbnailUrl={curatedVideo?.thumbnail_url || `https://img.youtube.com/vi/${session.videoId}/hqdefault.jpg`}
+                                                    title={learningSession?.title || `Video ${session.videoId}`}
+                                                    thumbnailUrl={learningSession?.thumbnail_url || `https://img.youtube.com/vi/${session.videoId}/hqdefault.jpg`}
                                                     progress={session.progress}
                                                     timeLeft={session.timeLeft}
                                                     totalSentences={session.totalSentences}

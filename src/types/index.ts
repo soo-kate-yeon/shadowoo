@@ -74,3 +74,23 @@ export interface CuratedVideo {
   created_at: string;
   created_by?: string;
 }
+
+export interface LearningSession {
+  id: string;
+  source_video_id: string;
+  title: string;
+  description?: string;
+  duration: number; // seconds (auto-calculated)
+  sentence_ids: string[];
+  start_time: number; // seconds
+  end_time: number; // seconds
+  thumbnail_url?: string;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  order_index: number;
+  created_at: string;
+  created_by?: string;
+
+  // Populated fields (optional, for UI convenience)
+  sentences?: Sentence[];
+  source_video?: CuratedVideo;
+}

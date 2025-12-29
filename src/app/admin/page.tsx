@@ -13,6 +13,8 @@ import { AdminHeader } from './components/AdminHeader';
 import { VideoPlayerPanel } from './components/VideoPlayerPanel';
 import { RawScriptEditor } from './components/RawScriptEditor';
 import { SentenceListEditor } from './components/SentenceListEditor';
+import { SessionCreator } from './components/SessionCreator';
+import { LearningSession } from '@/types';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import { createClient } from '@/utils/supabase/client';
 
@@ -56,6 +58,9 @@ function AdminPageContent() {
     const [isDraftSaving, setIsDraftSaving] = useState(false);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
+    // Session Creation State
+    const [createdSessions, setCreatedSessions] = useState<LearningSession[]>([]);
+
     const getVideoId = () => extractVideoId(youtubeUrl);
 
     const handlePlayerReady = (playerInstance: YT.Player) => {
@@ -89,6 +94,18 @@ function AdminPageContent() {
                     // Reconstruct raw script if possible, or leave empty
                     setLastSyncTime(data.snippet_end_time || 0);
                     console.log('Loaded video for editing:', data.title);
+
+                    // Fetch existing learning sessions
+                    const { data: sessionData } = await supabase
+                        .from('learning_sessions')
+                        .select('*')
+                        .eq('source_video_id', editId)
+                        .order('order_index', { ascending: true });
+
+                    if (sessionData) {
+                        // Map DB sessions to LearningSession type (if needed, but structure matches)
+                        setCreatedSessions(sessionData as LearningSession[]);
+                    }
                 } else {
                     console.error('Video not found for editing');
                 }
@@ -336,18 +353,35 @@ function AdminPageContent() {
 
             if (dbError) throw dbError;
 
+            // 2. Save Sessions via API
+            if (createdSessions.length > 0) {
+                const sessionsResponse = await fetch('/api/admin/learning-sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source_video_id: videoId,
+                        sessions: createdSessions
+                    })
+                });
+
+                if (!sessionsResponse.ok) {
+                    throw new Error('Failed to save learning sessions');
+                }
+            }
+
             setSuccess(true);
 
             // Clear draft
             await supabase.from('admin_drafts').delete().eq('key', DRAFT_KEY);
 
-            // If editing, maybe stay on page? If new, maybe clear?
+            // If editing, may be stay on page? If new, maybe clear?
             setTimeout(() => {
                 setSuccess(false);
                 if (!editId) {
                     setRawScript('');
                     setYoutubeUrl('');
                     setSentences([]);
+                    setCreatedSessions([]);
                     setLastSyncTime(0);
                 }
             }, 2000);
@@ -419,6 +453,15 @@ function AdminPageContent() {
                             onUpdateText={updateSentenceText}
                             onDelete={deleteSentence}
                         />
+
+                        {sentences.length > 0 && (
+                            <SessionCreator
+                                sentences={sentences}
+                                videoId={getVideoId() || ''}
+                                onSessionsChange={setCreatedSessions}
+                                initialSessions={createdSessions}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
