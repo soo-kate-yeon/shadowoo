@@ -60,8 +60,19 @@ function AdminPageContent() {
 
     // Session Creation State
     const [createdSessions, setCreatedSessions] = useState<LearningSession[]>([]);
+    const [showSessionCreator, setShowSessionCreator] = useState(false);
 
     const getVideoId = () => extractVideoId(youtubeUrl);
+    // ... (keep existing) ...
+
+    const handleStartSessionCreation = () => {
+        setShowSessionCreator(true);
+        // Optional: Scroll to it?
+        setTimeout(() => {
+            const element = document.getElementById('session-creator-section');
+            element?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    };
 
     const handlePlayerReady = (playerInstance: YT.Player) => {
         setPlayer(playerInstance);
@@ -452,15 +463,18 @@ function AdminPageContent() {
                             onUpdateTime={updateSentenceTime}
                             onUpdateText={updateSentenceText}
                             onDelete={deleteSentence}
+                            onStartSessionCreation={handleStartSessionCreation}
                         />
 
-                        {sentences.length > 0 && (
-                            <SessionCreator
-                                sentences={sentences}
-                                videoId={getVideoId() || ''}
-                                onSessionsChange={setCreatedSessions}
-                                initialSessions={createdSessions}
-                            />
+                        {showSessionCreator && sentences.length > 0 && (
+                            <div id="session-creator-section">
+                                <SessionCreator
+                                    sentences={sentences}
+                                    videoId={getVideoId() || ''}
+                                    onSessionsChange={setCreatedSessions}
+                                    initialSessions={createdSessions}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>
