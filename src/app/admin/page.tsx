@@ -7,6 +7,8 @@ import type { TranscriptItem } from '@/lib/transcript-parser';
 import { Sentence } from '@/types';
 import { useSentenceEditor } from './hooks/useSentenceEditor';
 import { useTranscriptFetch } from './hooks/useTranscriptFetch';
+import { SentenceItem } from './components/SentenceItem';
+import { VideoListModal } from './components/VideoListModal';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import { createClient } from '@/utils/supabase/client';
 
@@ -496,69 +498,14 @@ function AdminPageContent() {
                             </div>
                             <div className="flex-1 overflow-y-auto p-4 pt-10 space-y-3">
                                 {sentences.map((s, idx) => (
-                                    <div
+                                    <SentenceItem
                                         key={s.id}
-                                        className="bg-secondary-50 rounded-xl p-4 border border-secondary-100 hover:border-secondary-300 transition-all group"
-                                    >
-                                        <div className="flex gap-4 items-start">
-                                            <span className="text-xs font-mono text-secondary-400 mt-1.5 w-6">#{idx + 1}</span>
-                                            <div className="flex-1 space-y-3">
-                                                {/* Textarea for Wrapping */}
-                                                <textarea
-                                                    value={s.text}
-                                                    onChange={e => updateSentenceText(s.id, 'text', e.target.value)}
-                                                    rows={1}
-                                                    onInput={(e) => {
-                                                        const target = e.target as HTMLTextAreaElement;
-                                                        target.style.height = 'auto';
-                                                        target.style.height = target.scrollHeight + 'px';
-                                                    }}
-                                                    className="w-full bg-transparent font-medium text-lg text-secondary-900 focus:outline-none border-b border-transparent focus:border-secondary-300 pb-1 resize-none overflow-hidden"
-                                                    placeholder="Original Sentence"
-                                                />
-                                                <input
-                                                    value={s.translation || ''}
-                                                    onChange={e => updateSentenceText(s.id, 'translation', e.target.value)}
-                                                    className="w-full bg-transparent text-sm text-secondary-600 focus:outline-none border-b border-secondary-200 focus:border-primary-300 pb-1 placeholder:text-secondary-300"
-                                                    placeholder="Korean Translation (Click 'Auto Translate' above)"
-                                                />
-
-                                                <div className="flex gap-4 text-xs font-mono text-secondary-500 items-center">
-                                                    <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-secondary-200">
-                                                        <span>Start</span>
-                                                        <input
-                                                            type="number"
-                                                            step="0.1"
-                                                            value={s.startTime}
-                                                            onChange={e => updateSentenceTime(s.id, 'startTime', parseFloat(e.target.value))}
-                                                            className="w-14 text-right focus:outline-none focus:text-primary-600 font-bold"
-                                                        />
-                                                    </div>
-                                                    <div className="text-secondary-300">→</div>
-                                                    <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-secondary-200">
-                                                        <span>End</span>
-                                                        <input
-                                                            type="number"
-                                                            step="0.1"
-                                                            value={s.endTime}
-                                                            onChange={e => updateSentenceTime(s.id, 'endTime', parseFloat(e.target.value))}
-                                                            className="w-14 text-right focus:outline-none focus:text-primary-600 font-bold"
-                                                        />
-                                                    </div>
-                                                    <div className="text-secondary-300 ml-2">
-                                                        Dur: {(s.endTime - s.startTime).toFixed(2)}s
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => deleteSentence(idx)}
-                                                className="opacity-0 group-hover:opacity-100 p-2 text-secondary-400 hover:text-error hover:bg-error/10 rounded-lg transition-all"
-                                                title="Delete sentence"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                    </div>
+                                        sentence={s}
+                                        index={idx}
+                                        onUpdateTime={updateSentenceTime}
+                                        onUpdateText={updateSentenceText}
+                                        onDelete={deleteSentence}
+                                    />
                                 ))}
                                 {sentences.length === 0 && (
                                     <div className="text-center text-secondary-400 py-10 italic">
@@ -571,47 +518,12 @@ function AdminPageContent() {
                 </div>
             </div>
 
-            {/* Existing Videos Modal */}
-            {
-                showList && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8" onClick={() => setShowList(false)}>
-                        <div className="bg-surface rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                            <div className="p-4 border-b border-secondary-200 flex justify-between items-center bg-secondary-50">
-                                <h2 className="font-bold text-lg text-secondary-900">Existing Videos ({existingVideos.length})</h2>
-                                <button onClick={() => setShowList(false)} className="text-secondary-500 hover:text-secondary-900">✕</button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-2">
-                                {existingVideos.length === 0 ? (
-                                    <div className="p-8 text-center text-secondary-500">No videos found.</div>
-                                ) : (
-                                    <div className="space-y-1">
-                                        {existingVideos.map((v) => (
-                                            <button
-                                                key={v.video_id}
-                                                onClick={() => {
-                                                    // Hard reload to reset states cleanly or push router
-                                                    if (confirm('Load this video? Unsaved changes will be lost.')) {
-                                                        window.location.href = `/admin?id=${v.video_id}`;
-                                                    }
-                                                }}
-                                                className="w-full text-left p-3 hover:bg-secondary-100 rounded-lg flex justify-between items-center group transition-colors"
-                                            >
-                                                <div>
-                                                    <div className="font-medium text-secondary-900">{v.title || v.video_id}</div>
-                                                    <div className="text-xs text-secondary-500">{new Date(v.created_at).toLocaleDateString()}</div>
-                                                </div>
-                                                <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    Edit
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
+            <VideoListModal
+                show={showList}
+                videos={existingVideos}
+                onClose={() => setShowList(false)}
+                onSelect={(videoId) => window.location.href = `/admin?id=${videoId}`}
+            />
         </div >
     );
 }
