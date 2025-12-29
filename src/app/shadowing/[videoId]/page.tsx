@@ -7,7 +7,10 @@ import { Sentence, LearningSession } from '@/types';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import { ShadowingHeader } from '@/components/shadowing/ShadowingHeader';
 import { ShadowingScriptList } from '@/components/shadowing/ShadowingScriptList';
+import { RecordingBar } from '@/components/shadowing/RecordingBar';
 import { Check } from 'lucide-react';
+
+type RecordingState = 'idle' | 'recording' | 'playback';
 
 export default function ShadowingPage() {
     const params = useParams();
@@ -27,6 +30,15 @@ export default function ShadowingPage() {
     const [player, setPlayer] = useState<YT.Player | null>(null);
     const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
     const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Loop State
+    const [loopingSentenceId, setLoopingSentenceId] = useState<string | null>(null);
+
+    // Recording State
+    const [recordingState, setRecordingState] = useState<RecordingState>('idle');
+    const [isRecordingPlaying, setIsRecordingPlaying] = useState(false);
+    const [recordingDuration, setRecordingDuration] = useState(0);
+    const [currentRecordingSentenceId, setCurrentRecordingSentenceId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!videoId) return;
@@ -87,12 +99,10 @@ export default function ShadowingPage() {
     const handlePlaySentence = (startTime: number, endTime: number) => {
         if (!player) return;
 
-        // Clear existing timeout
         if (playTimeoutRef.current) {
             clearTimeout(playTimeoutRef.current);
         }
 
-        // Find sentence ID
         const sentence = sentences.find(s => s.startTime === startTime);
         if (sentence) {
             setCurrentPlayingId(sentence.id);
@@ -108,14 +118,66 @@ export default function ShadowingPage() {
         }, duration);
     };
 
-    const handleStopOriginal = () => {
-        if (player) {
-            player.pauseVideo();
+    const handleLoopSentence = (sentenceId: string, isLooping: boolean) => {
+        if (isLooping) {
+            setLoopingSentenceId(sentenceId);
+            const sentence = sentences.find(s => s.id === sentenceId);
+            if (sentence && player) {
+                player.seekTo(sentence.startTime, true);
+                player.playVideo();
+            }
+        } else {
+            setLoopingSentenceId(null);
         }
-        if (playTimeoutRef.current) {
-            clearTimeout(playTimeoutRef.current);
-        }
-        setCurrentPlayingId(null);
+    };
+
+    // Loop playback effect
+    useEffect(() => {
+        if (!loopingSentenceId || !player) return;
+
+        const loopingSentence = sentences.find(s => s.id === loopingSentenceId);
+        if (!loopingSentence) return;
+
+        const checkLoop = setInterval(() => {
+            if (player && player.getCurrentTime) {
+                const currentTime = player.getCurrentTime();
+                if (currentTime >= loopingSentence.endTime) {
+                    player.seekTo(loopingSentence.startTime, true);
+                    player.playVideo();
+                }
+            }
+        }, 100);
+
+        return () => clearInterval(checkLoop);
+    }, [loopingSentenceId, player, sentences]);
+
+    const handleRecordSentence = (sentenceId: string) => {
+        setCurrentRecordingSentenceId(sentenceId);
+        setRecordingState('recording');
+        setRecordingDuration(0);
+        // TODO: Start actual audio recording
+    };
+
+    const handleStopRecording = () => {
+        setRecordingState('playback');
+        // TODO: Stop actual audio recording and get duration
+        setRecordingDuration(5); // Mock duration
+    };
+
+    const handlePlayRecording = () => {
+        setIsRecordingPlaying(true);
+        // TODO: Play recorded audio
+    };
+
+    const handlePauseRecording = () => {
+        setIsRecordingPlaying(false);
+        // TODO: Pause recorded audio
+    };
+
+    const handleRecordAgain = () => {
+        setRecordingState('recording');
+        setRecordingDuration(0);
+        // TODO: Start new recording
     };
 
     if (loading) {
@@ -145,8 +207,7 @@ export default function ShadowingPage() {
                 {/* Left: Video Player */}
                 <div className="w-1/2 h-full flex flex-col">
                     <h2 className="text-2xl font-bold text-neutral-900 leading-relaxed mb-6 tracking-tight whitespace-pre-wrap">
-                        이제, 스크립트를 보며 다시 들어보세요.{'\n'}
-                        어려운 문장이 있다면 클릭해서 분석해보세요.
+                        문장을 선택하고 쉐도잉을 연습하세요
                     </h2>
 
                     <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-lg">
@@ -194,13 +255,24 @@ export default function ShadowingPage() {
                             sentences={sentences}
                             mode={mode}
                             onPlaySentence={handlePlaySentence}
-                            onStopOriginal={handleStopOriginal}
-                            currentPlayingId={currentPlayingId}
-                            player={player}
+                            onLoopSentence={handleLoopSentence}
+                            onRecordSentence={handleRecordSentence}
+                            loopingSentenceId={loopingSentenceId}
                         />
                     </div>
                 </div>
             </main>
+
+            {/* Recording Bar */}
+            <RecordingBar
+                state={recordingState}
+                onRecord={handleRecordAgain}
+                onStop={handleStopRecording}
+                onPlay={handlePlayRecording}
+                onPause={handlePauseRecording}
+                isPlaying={isRecordingPlaying}
+                recordingDuration={recordingDuration}
+            />
         </div>
     );
 }
