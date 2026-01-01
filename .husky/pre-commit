@@ -1,0 +1,8 @@
+# ESLint + Prettier (staged files only)
+npx lint-staged
+
+# TypeScript type check
+npm run type-check
+
+# Build check
+npm run build
