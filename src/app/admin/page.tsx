@@ -87,7 +87,6 @@ function AdminPageContent() {
 
   // --- Edit Mode & Draft Logic ---
 
-
   // 1. Initial Load: Check for Edit ID first, then Draft
   useEffect(() => {
     const init = async () => {
@@ -129,7 +128,6 @@ function AdminPageContent() {
         setLoading(false);
         return;
       }
-
     };
 
     init();
@@ -378,6 +376,7 @@ function AdminPageContent() {
         const sessionsResponse = await fetch("/api/admin/learning-sessions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             source_video_id: videoId,
             sessions: createdSessions,
@@ -385,7 +384,11 @@ function AdminPageContent() {
         });
 
         if (!sessionsResponse.ok) {
-          throw new Error("Failed to save learning sessions");
+          const errorData = await sessionsResponse.json();
+          console.error("Session save error details:", errorData);
+          throw new Error(
+            errorData.error || "Failed to save learning sessions",
+          );
         }
       }
 
