@@ -86,7 +86,7 @@ function AdminPageContent() {
   };
 
   // --- Edit Mode & Draft Logic ---
-  const DRAFT_KEY = "admin_current_draft";
+
 
   // 1. Initial Load: Check for Edit ID first, then Draft
   useEffect(() => {
@@ -130,22 +130,6 @@ function AdminPageContent() {
         return;
       }
 
-      // B. Draft Recovery (Only if not editing)
-      const { data, error } = await supabase
-        .from("admin_drafts")
-        .select("data")
-        .eq("key", DRAFT_KEY)
-        .maybeSingle();
-
-      if (data?.data && confirm("Recover previous draft session?")) {
-        const d = data.data as any;
-        setYoutubeUrl(d.youtubeUrl || "");
-        setDifficulty(d.difficulty || "intermediate");
-        setTags(d.tags || "");
-        setRawScript(d.rawScript || "");
-        setSentences(d.sentences || []);
-        setLastSyncTime(d.lastSyncTime || 0);
-      }
     };
 
     init();
