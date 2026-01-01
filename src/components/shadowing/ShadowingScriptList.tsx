@@ -1,113 +1,78 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sentence } from "@/types";
-import { ShadowingRecorder } from "./ShadowingRecorder";
+import { Repeat, Mic } from "lucide-react";
 
 interface ShadowingScriptListProps {
     sentences: Sentence[];
     mode: "sentence" | "paragraph" | "total";
     onPlaySentence: (startTime: number, endTime: number) => void;
-    onStopOriginal: () => void;
-    currentPlayingId: string | null;
-    player: YT.Player | null;
+    onLoopSentence: (sentenceId: string, isLooping: boolean) => void;
+    onRecordSentence: (sentenceId: string) => void;
+    loopingSentenceId: string | null;
 }
 
 export function ShadowingScriptList({
     sentences,
     mode,
     onPlaySentence,
-    onStopOriginal,
-    currentPlayingId,
-    player
+    onLoopSentence,
+    onRecordSentence,
+    loopingSentenceId
 }: ShadowingScriptListProps) {
-    const [expandedId, setExpandedId] = useState<string | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-
-    const toggleExpand = (id: string) => {
-        if (expandedId === id) {
-            setExpandedId(null);
-            onStopOriginal();
-        } else {
-            setExpandedId(id);
-        }
-    };
-
-    // Spacebar control
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.code === 'Space' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-                e.preventDefault();
-
-                if (!player || !expandedId) return;
-
-                const currentState = player.getPlayerState();
-                if (currentState === window.YT.PlayerState.PLAYING) {
-                    player.pauseVideo();
-                } else {
-                    // Find the expanded sentence and play it
-                    const sentence = sentences.find(s => s.id === expandedId);
-                    if (sentence) {
-                        onPlaySentence(sentence.startTime, sentence.endTime);
-                    }
-                }
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [player, expandedId, sentences, onPlaySentence]);
-
-    // Track playing state from player
-    useEffect(() => {
-        if (!player) return;
-
-        const interval = setInterval(() => {
-            const state = player.getPlayerState();
-            setIsPlaying(state === window.YT.PlayerState.PLAYING);
-        }, 100);
-
-        return () => clearInterval(interval);
-    }, [player]);
 
     return (
         <div className="flex flex-col gap-6">
-            {sentences.map((sentence, idx) => (
-                <div key={sentence.id} className="flex flex-col gap-4">
-                    <div className="flex gap-4">
-                        <span className={`
-                            text-xs font-mono mt-2 shrink-0 w-6 transition-colors
-                            ${expandedId === sentence.id ? 'text-primary-700 font-bold' : 'text-secondary-500'}
-                        `}>
-                            {idx + 1}
-                        </span>
-                        <p
-                            onClick={() => toggleExpand(sentence.id)}
-                            className={`
-                                text-lg leading-relaxed cursor-pointer transition-all duration-200
-                                ${expandedId === sentence.id
-                                    ? "font-semibold text-neutral-900"
-                                    : "font-medium text-secondary-500 hover:text-secondary-700"
-                                }
-                            `}
-                        >
-                            {sentence.text}
-                        </p>
-                    </div>
+            {sentences.map((sentence, idx) => {
+                const isLooping = loopingSentenceId === sentence.id;
 
-                    {/* Shadowing Player Panel (Accordion) */}
-                    {expandedId === sentence.id && (
-                        <div className="pl-10">
-                            <ShadowingRecorder
-                                onPlayOriginal={() => onPlaySentence(sentence.startTime, sentence.endTime)}
-                                onStopOriginal={onStopOriginal}
-                                isOriginalPlaying={currentPlayingId === sentence.id && isPlaying}
-                                sentenceDuration={sentence.endTime - sentence.startTime}
-                            />
+                return (
+                    <div key={sentence.id} className="relative group">
+                        <div className="flex gap-4 items-start">
+                            <span className={`
+                                text-xs font-mono mt-2 shrink-0 w-6 transition-colors
+                                ${isLooping ? 'text-primary-700 font-bold' : 'text-secondary-500'}
+                            `}>
+                                {idx + 1}
+                            </span>
+                            <p
+                                onClick={() => onPlaySentence(sentence.startTime, sentence.endTime)}
+                                className={`
+                                    flex-1 text-lg leading-relaxed cursor-pointer transition-all duration-200
+                                    ${isLooping
+                                        ? "font-semibold text-neutral-900"
+                                        : "font-medium text-secondary-500 hover:text-secondary-700"
+                                    }
+                                `}
+                            >
+                                {sentence.text}
+                            </p>
+
+                            {/* Hover Controls */}
+                            <div className={`flex gap-2 mt-1 transition-opacity ${isLooping ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                <button
+                                    onClick={() => onLoopSentence(sentence.id, !isLooping)}
+                                    className={`p-2 rounded-lg transition-colors ${isLooping
+                                            ? 'bg-primary-500 text-white'
+                                            : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                                        }`}
+                                    aria-label={isLooping ? "Stop loop" : "Loop sentence"}
+                                >
+                                    <Repeat className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => onRecordSentence(sentence.id)}
+                                    className="p-2 rounded-lg bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors"
+                                    aria-label="Record"
+                                >
+                                    <Mic className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
-                    )}
-                </div>
-            ))}
+                    </div>
+                );
+            })}
             <div className="h-20" />
         </div>
     );

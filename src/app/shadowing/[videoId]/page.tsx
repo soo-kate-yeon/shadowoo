@@ -7,6 +7,8 @@ import { Sentence, LearningSession } from '@/types';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import { ShadowingHeader } from '@/components/shadowing/ShadowingHeader';
 import { ShadowingScriptList } from '@/components/shadowing/ShadowingScriptList';
+import { RecordingBar } from '@/components/shadowing/RecordingBar';
+import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { Check } from 'lucide-react';
 
 export default function ShadowingPage() {
@@ -27,6 +29,22 @@ export default function ShadowingPage() {
     const [player, setPlayer] = useState<YT.Player | null>(null);
     const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
     const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Loop State
+    const [loopingSentenceId, setLoopingSentenceId] = useState<string | null>(null);
+
+    // Audio Recording Hook
+    const {
+        recordingState,
+        duration: recordingDuration,
+        isPlaying: isRecordingPlaying,
+        playbackProgress,
+        startRecording,
+        stopRecording,
+        playRecording,
+        pauseRecording,
+        resetRecording
+    } = useAudioRecorder();
 
     useEffect(() => {
         if (!videoId) return;
@@ -87,12 +105,10 @@ export default function ShadowingPage() {
     const handlePlaySentence = (startTime: number, endTime: number) => {
         if (!player) return;
 
-        // Clear existing timeout
         if (playTimeoutRef.current) {
             clearTimeout(playTimeoutRef.current);
         }
 
-        // Find sentence ID
         const sentence = sentences.find(s => s.startTime === startTime);
         if (sentence) {
             setCurrentPlayingId(sentence.id);
@@ -108,14 +124,46 @@ export default function ShadowingPage() {
         }, duration);
     };
 
-    const handleStopOriginal = () => {
-        if (player) {
-            player.pauseVideo();
+    const handleLoopSentence = (sentenceId: string, isLooping: boolean) => {
+        if (isLooping) {
+            setLoopingSentenceId(sentenceId);
+            const sentence = sentences.find(s => s.id === sentenceId);
+            if (sentence && player) {
+                player.seekTo(sentence.startTime, true);
+                player.playVideo();
+            }
+        } else {
+            setLoopingSentenceId(null);
         }
-        if (playTimeoutRef.current) {
-            clearTimeout(playTimeoutRef.current);
+    };
+
+    // Loop playback effect
+    useEffect(() => {
+        if (!loopingSentenceId || !player) return;
+
+        const loopingSentence = sentences.find(s => s.id === loopingSentenceId);
+        if (!loopingSentence) return;
+
+        const checkLoop = setInterval(() => {
+            if (player && player.getCurrentTime) {
+                const currentTime = player.getCurrentTime();
+                if (currentTime >= loopingSentence.endTime) {
+                    player.seekTo(loopingSentence.startTime, true);
+                    player.playVideo();
+                }
+            }
+        }, 100);
+
+        return () => clearInterval(checkLoop);
+    }, [loopingSentenceId, player, sentences]);
+
+    const handleRecordSentence = async (sentenceId: string) => {
+        // Reset previous recording if exists
+        if (recordingState !== 'idle') {
+            resetRecording();
         }
-        setCurrentPlayingId(null);
+        // Start new recording
+        await startRecording();
     };
 
     if (loading) {
@@ -137,7 +185,7 @@ export default function ShadowingPage() {
             <ShadowingHeader
                 title={videoData?.title || 'Loading...'}
                 onBack={() => router.push('/home')}
-                onPrevStep={() => router.push(`/session/${videoId}${sessionId ? `?sessionId=${sessionId}` : ''}`)}
+                onPrevStep={() => router.push(`/listening/${videoId}${sessionId ? `?sessionId=${sessionId}` : ''}`)}
                 onNextStep={() => { }} // TODO: Next step
             />
 
@@ -145,8 +193,7 @@ export default function ShadowingPage() {
                 {/* Left: Video Player */}
                 <div className="w-1/2 h-full flex flex-col">
                     <h2 className="text-2xl font-bold text-neutral-900 leading-relaxed mb-6 tracking-tight whitespace-pre-wrap">
-                        이제, 스크립트를 보며 다시 들어보세요.{'\n'}
-                        어려운 문장이 있다면 클릭해서 분석해보세요.
+                        문장을 선택하고 쉐도잉을 연습하세요
                     </h2>
 
                     <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-lg">
@@ -194,13 +241,27 @@ export default function ShadowingPage() {
                             sentences={sentences}
                             mode={mode}
                             onPlaySentence={handlePlaySentence}
-                            onStopOriginal={handleStopOriginal}
-                            currentPlayingId={currentPlayingId}
-                            player={player}
+                            onLoopSentence={handleLoopSentence}
+                            onRecordSentence={handleRecordSentence}
+                            loopingSentenceId={loopingSentenceId}
                         />
                     </div>
                 </div>
             </main>
+
+            {/* Recording Bar */}
+            <RecordingBar
+                state={recordingState}
+                onRecord={startRecording}
+                onStop={stopRecording}
+                onPlay={playRecording}
+                onPause={pauseRecording}
+                onCancel={resetRecording}
+                onDone={resetRecording}
+                isPlaying={isRecordingPlaying}
+                recordingDuration={recordingDuration}
+                playbackProgress={playbackProgress}
+            />
         </div>
     );
 }

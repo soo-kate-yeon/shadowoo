@@ -119,7 +119,7 @@ export default function HomePage() {
                             ) : (
                                 <div className="flex flex-col gap-4 pb-4">
                                     {learningSessions.map((session) => (
-                                        <Link href={`/session/${session.source_video_id}?sessionId=${session.id}`} key={session.id} className="block">
+                                        <Link href={`/listening/${session.source_video_id}?sessionId=${session.id}`} key={session.id} className="block">
                                             <div className="bg-surface rounded-2xl overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-transparent hover:border-primary-200">
                                                 <div className="aspect-video relative bg-secondary-300">
                                                     <img
@@ -228,7 +228,7 @@ export default function HomePage() {
                                         return (
                                             <div
                                                 key={session.id}
-                                                onClick={() => !isEditMode && router.push(`/session/${session.videoId}${learningSession ? `?sessionId=${learningSession.id}` : ''}`)}
+                                                onClick={() => !isEditMode && router.push(`/listening/${session.videoId}${learningSession ? `?sessionId=${learningSession.id}` : ''}`)}
                                                 className={`cursor-pointer ${isEditMode ? 'pointer-events-auto' : ''}`}
                                             >
                                                 <SessionCard

@@ -1,17 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 
-interface SessionHeaderProps {
+interface ListeningHeaderProps {
     title: string;
-    currentStep?: number;
     onBack?: () => void;
     onNextStep?: () => void;
-    onPrevStep?: () => void;
 }
 
-export function SessionHeader({ title, currentStep = 1, onBack, onNextStep, onPrevStep }: SessionHeaderProps) {
+export function ListeningHeader({ title, onBack, onNextStep }: ListeningHeaderProps) {
     const router = useRouter();
 
     const handleBack = () => {
@@ -37,19 +34,11 @@ export function SessionHeader({ title, currentStep = 1, onBack, onNextStep, onPr
             </div>
 
             <div className="flex gap-3 shrink-0">
-                {currentStep > 1 && (
-                    <button
-                        onClick={onPrevStep}
-                        className="bg-secondary-100 hover:bg-secondary-300 text-primary-500 px-4 py-2 rounded-xl text-body-large font-medium transition-colors"
-                    >
-                        이전 단계
-                    </button>
-                )}
                 <button
                     onClick={onNextStep}
                     className="bg-secondary-100 hover:bg-secondary-300 text-primary-500 px-4 py-2 rounded-xl text-body-large font-medium transition-colors"
                 >
-                    다음 단계
+                    쉐도잉 시작
                 </button>
             </div>
         </div>
