@@ -22,8 +22,6 @@ export default function HomePage() {
   const [selectedVideoIds, setSelectedVideoIds] = useState<Set<string>>(
     new Set(),
   );
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Curated videos state
   const [learningSessions, setLearningSessions] = useState<any[]>([]); // Using any for now to match API response, or import LearningSession
@@ -192,48 +190,24 @@ export default function HomePage() {
                     </button>
                     <button
                       onClick={async () => {
-                        if (selectedVideoIds.size === 0 || isDeleting) return;
-
-                        console.log(
-                          `🗑️ [HomePage] Starting bulk deletion of ${selectedVideoIds.size} sessions`,
-                        );
-                        setIsDeleting(true);
-                        setDeleteError(null);
-
+                        if (selectedVideoIds.size === 0) return;
                         const idsToDelete = Array.from(selectedVideoIds);
-                        const results = await Promise.all(
-                          idsToDelete.map((videoId) => removeSession(videoId)),
-                        );
-
-                        const failures = results.filter((r) => !r.success);
-
-                        if (failures.length > 0) {
-                          console.error(
-                            `❌ [HomePage] ${failures.length} deletions failed`,
-                          );
-                          setDeleteError(`${failures.length}개 항목 삭제 실패`);
-                        } else {
-                          console.log(
-                            `✅ [HomePage] Successfully deleted ${results.length} sessions`,
-                          );
+                        for (const videoId of idsToDelete) {
+                          await removeSession(videoId);
                         }
-
-                        setIsDeleting(false);
                         setSelectedVideoIds(new Set());
-                        if (failures.length === 0) {
-                          setIsEditMode(false);
-                        }
+                        setIsEditMode(false);
                       }}
-                      disabled={selectedVideoIds.size === 0 || isDeleting}
+                      disabled={selectedVideoIds.size === 0}
                       className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
-                        selectedVideoIds.size > 0 && !isDeleting
+                        selectedVideoIds.size > 0
                           ? "bg-red-100 text-red-600 hover:bg-red-200"
                           : "bg-secondary-100 text-secondary-400 cursor-not-allowed"
                       }`}
                     >
-                      {isDeleting
-                        ? "삭제 중..."
-                        : `삭제 ${selectedVideoIds.size > 0 ? `(${selectedVideoIds.size})` : ""}`}
+                      삭제{" "}
+                      {selectedVideoIds.size > 0 &&
+                        `(${selectedVideoIds.size})`}
                     </button>
                     <button
                       onClick={() => {
@@ -257,14 +231,6 @@ export default function HomePage() {
                 )}
               </div>
             </div>
-
-            {/* Error message */}
-            {deleteError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-2 shrink-0">
-                <p className="text-sm text-red-600">{deleteError}</p>
-              </div>
-            )}
-
             <div className="flex-1 min-h-0 overflow-y-auto pr-2">
               {recentSessions.length > 0 ? (
                 <div className="flex flex-col gap-4 pb-4">

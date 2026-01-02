@@ -246,31 +246,16 @@ export const useStore = create<AppState>()(
       getVideo: (videoId) => get().videos.find((v) => v.id === videoId),
 
       removeSession: async (videoId) => {
-        const userId = await getCurrentUserId();
-
-        console.log(
-          `🗑️ [Store] Attempting to delete session for videoId: ${videoId}`,
-        );
-
         try {
-          // Delete from DB first
+          const userId = await getCurrentUserId();
           if (userId) {
-            console.log(
-              `🗑️ [Store] Deleting from Supabase for user: ${userId}`,
-            );
             await SupabaseStore.deleteSession(userId, videoId);
-            console.log(`✅ [Store] Successfully deleted from Supabase`);
           }
-
-          // Only update local state if DB deletion succeeded
+          // Update local state after successful DB deletion
           set((state) => {
             const { [videoId]: _, ...remainingSessions } = state.sessions;
-            console.log(
-              `✅ [Store] Local state updated. Remaining sessions: ${Object.keys(remainingSessions).length}`,
-            );
             return { sessions: remainingSessions };
           });
-
           return { success: true };
         } catch (error) {
           console.error(
