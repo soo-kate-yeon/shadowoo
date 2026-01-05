@@ -78,7 +78,14 @@ export default function HomePage() {
   );
 
   if (!isMounted || isAuthLoading) {
-    return null;
+    return (
+      <div className="min-h-screen bg-secondary-200 flex flex-col">
+        <TopNav />
+        <main className="flex-1 max-w-[1920px] w-full mx-auto p-8 flex items-center justify-center">
+          <p className="text-secondary-500">Loading...</p>
+        </main>
+      </div>
+    );
   }
 
   const isGuest = !user;
@@ -153,39 +160,36 @@ export default function HomePage() {
                   </Link>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-x-6 gap-y-8 pb-8">
-                  {learningSessions.map((session) => (
-                    <VideoCard
-                      key={session.id}
-                      title={session.title}
-                      thumbnailUrl={session.thumbnail_url}
-                      duration={`${Math.floor(session.duration / 60)}:${String(Math.floor(session.duration % 60)).padStart(2, "0")}`}
-                      description={session.description || ""}
-                      sentenceCount={session.sentence_ids?.length || 0}
-                      onClick={() => {
-                        if (isGuest) return;
-                        router.push(
-                          `/listening/${session.source_video_id}?sessionId=${session.id}`,
-                        );
-                      }}
-                      onMouseEnter={() => {
-                        if (isGuest) return;
-                        prefetchVideo(session.source_video_id);
-                        prefetchSession(session.id);
-                      }}
-                    />
-                  ))}
+                <div className="relative">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-8 pb-8">
+                    {learningSessions.map((session) => (
+                      <VideoCard
+                        key={session.id}
+                        title={session.title}
+                        thumbnailUrl={session.thumbnail_url}
+                        duration={`${Math.floor(session.duration / 60)}:${String(Math.floor(session.duration % 60)).padStart(2, "0")}`}
+                        description={session.description || ""}
+                        sentenceCount={session.sentence_ids?.length || 0}
+                        onClick={() => {
+                          if (isGuest) return;
+                          router.push(
+                            `/listening/${session.source_video_id}?sessionId=${session.id}`,
+                          );
+                        }}
+                        onMouseEnter={() => {
+                          if (isGuest) return;
+                          prefetchVideo(session.source_video_id);
+                          prefetchSession(session.id);
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {isGuest && (
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/30 to-white/60 pointer-events-none rounded-2xl" />
+                  )}
                 </div>
               )}
             </div>
-
-            {isGuest && (
-              <div className="absolute inset-0 z-10 -m-4 p-4 pointer-events-none">
-                <div className="w-full h-full relative pointer-events-auto">
-                  <GuestViewOverlay />
-                </div>
-              </div>
-            )}
           </section>
 
           {/* Right Column: Recent Sessions */}
@@ -331,6 +335,8 @@ export default function HomePage() {
           </section>
         </div>
       </main>
+
+      {isMounted && isGuest && <GuestViewOverlay />}
     </div>
   );
 }

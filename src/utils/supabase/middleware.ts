@@ -37,6 +37,11 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Allow API routes to be accessed without authentication
+  if (request.nextUrl.pathname.startsWith("/api")) {
+    return response;
+  }
+
   if (
     !user &&
     !request.nextUrl.pathname.startsWith("/auth") &&

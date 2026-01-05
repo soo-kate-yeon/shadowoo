@@ -15,18 +15,20 @@ export function AuthModal({
   defaultMode?: "login" | "signup";
 }) {
   const [mode, setMode] = useState<"login" | "signup">(defaultMode);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   // Reset state when modal opens or defaultMode changes
   useEffect(() => {
     if (isOpen) {
       setMode(defaultMode);
+      setShowEmailForm(false);
     }
   }, [isOpen, defaultMode]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
@@ -67,22 +69,7 @@ export function AuthModal({
           </div>
 
           <div className="flex flex-col gap-6 w-full">
-            {/* 1) Email/Password Form */}
-            <AuthForm mode={mode} />
-
-            {/* 2) Divider */}
-            <div className="relative py-2">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-neutral-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-neutral-500 font-medium">
-                  또는
-                </span>
-              </div>
-            </div>
-
-            {/* 3) Google Login */}
+            {/* 1) Google Login */}
             <LoginButton
               provider="google"
               variant="social"
@@ -116,6 +103,47 @@ export function AuthModal({
                 Google로 계속하기
               </span>
             </LoginButton>
+
+            {/* 2) Email Login Button */}
+            <button
+              onClick={() => setShowEmailForm(!showEmailForm)}
+              className="w-full bg-white text-neutral-900 border border-neutral-200 hover:bg-neutral-50 h-14 text-lg justify-start px-6 gap-4 shadow-sm rounded-2xl flex items-center transition-colors"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+              <span className="flex-1 text-center font-medium">
+                이메일로 계속하기
+              </span>
+            </button>
+
+            {/* 3) Email Form (conditionally shown) */}
+            {showEmailForm && (
+              <>
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-neutral-200" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white text-neutral-500 font-medium">
+                      또는
+                    </span>
+                  </div>
+                </div>
+
+                <AuthForm mode={mode} />
+              </>
+            )}
 
             {/* Switch Mode */}
             <p className="text-center text-neutral-500">
