@@ -28,39 +28,64 @@ export async function POST(request: NextRequest) {
     const sentencesText = sentences.map((s: Sentence) => s.text).join(" ");
 
     const prompt = `
-You are an English learning content creator. Based on the following English transcript excerpt, generate a concise title and helpful description for a learning session.
+You are an English learning content creator specializing in conversational English. Analyze the following transcript excerpt and generate a title and description for a shadowing learning session.
 
 **Title Requirements:**
-- Catchy and describes what learners will practice
-- In Korean language
+1. MUST include BOTH elements:
+   - The full video/source context (e.g., movie name, situation)
+   - The specific conversation type or speaking style
+2. Conversation types to identify:
+   - 설득하는 말하기 (persuasive speaking)
+   - 주장/의견 표현 (asserting opinions)
+   - 캐주얼 토크/일상 대화 (casual conversation)
+   - 토론/논쟁 (debate/argument)
+   - 독백/생각 표현 (monologue/expressing thoughts)
+   - 요청/부탁하기 (making requests)
+   - 감정 표현 (expressing emotions)
+3. Be concise but specific - users should understand what they'll learn from the title alone
+4. In Korean language
+
+**Title Examples:**
+✅ Good: "악마는 프라다를 입는다: 직장 상사와의 갈등 대화로 배우는 직설적 표현법"
+✅ Good: "TED Talk: 설득력 있게 의견 주장하는 프레젠테이션 말하기"
+✅ Good: "Friends 시트콤: 친구들과의 캐주얼한 농담과 티키타카 대화"
+❌ Bad: "악마는 프라다를 입는다 속 대화를 통해 배우는 일상 대화" (too generic, doesn't specify conversation type)
 
 **Description Requirements:**
-The description must consist of exactly 2 sentences in Korean:
-1. First sentence: Summarize the main topic and content of this video script
-2. Second sentence: Explain specific, concrete learning benefits with ACTUAL EXAMPLES from the script
-   - Include specific vocabulary/expressions with quotes (e.g., "figure out", "I'd like to~")
-   - Mention specific grammar patterns (e.g., 현재완료, 가정법, 관계대명사)
-   - Describe practical usage situations (e.g., 회사 미팅, 친구와의 대화, 전화 통화)
-   - Be CONCRETE and SPECIFIC, not abstract
+The description MUST be exactly 2-3 sentences in Korean (약 2-3줄):
+1. First sentence: Briefly state what situation/context this conversation is about
+2. Second sentence: Quote SPECIFIC expressions/phrases from the actual script with quotation marks
+3. Third sentence (optional): Explain practical usage situations where learners can apply these expressions
+
+**Description Requirements (CRITICAL):**
+- MUST quote actual words/phrases from the transcript using quotation marks
+- MUST analyze when/where these expressions can be used
+- Focus on actionable learning outcomes
+- Be concrete and specific, NOT abstract or generic
+
+**Description Examples:**
+✅ Good: "이 대화는 상사가 부하직원에게 불만을 표현하는 장면이에요. "That's all", "You have no style or sense of fashion" 같은 직설적인 비판 표현과 "I don't think I'm like that" 같은 방어적 응답 표현을 배울 수 있어요. 이런 표현들은 직장에서 피드백을 주고받을 때나 의견 차이를 표현할 때 활용할 수 있어요."
+
+✅ Good: "발표자가 청중에게 새로운 관점을 제시하는 프레젠테이션이에요. "What if we could~", "Imagine a world where~" 같은 가정을 통한 설득 표현과 "The key is to~" 같은 핵심 강조 표현을 배울 수 있어요."
+
+❌ Bad: "이 대화는 직장에서의 대화에 대한 내용이에요. 직장 관련 표현을 배울 수 있어요." (no specific quotes, too abstract)
 
 **Tone:** Use friendly, conversational Korean ending with "~요" (존댓말 but casual)
-
-**Good Example:**
-"이 대화는 카페에서 음료를 주문하는 상황에 대한 내용이에요. 'I'd like to~'와 'Can I get~' 같은 주문 표현과 함께 would like 패턴을 실제 상황에서 어떻게 쓰는지 배울 수 있어요."
-
-**Bad Example (too abstract):**
-"이 대화는 주문에 대한 내용이에요. 주문 표현을 배울 수 있어요." ❌
 
 Transcript excerpt:
 "${sentencesText}"
 
 Return ONLY a valid JSON object (no markdown formatting) with this structure:
 {
-  "title": "간단하고 매력적인 제목 (한국어)",
-  "description": "첫 번째 문장: 영상 내용 요약. 두 번째 문장: 구체적인 학습 베네핏 (실제 표현과 예시 포함)."
+  "title": "[영상/출처 맥락]: [구체적인 대화 타입]으로 배우는 [학습 포인트]",
+  "description": "첫 문장: 상황 설명. 두 번째 문장: '실제 스크립트 표현' 인용과 문법/표현 패턴. 세 번째 문장(선택): 활용 상황 분석."
 }
 
-CRITICAL: Second sentence MUST include specific examples from the transcript with quotes. Be concrete, not abstract.
+CRITICAL RULES:
+1. Title MUST specify the conversation type (설득/주장/대화/토론/독백/요청/감정표현 etc.)
+2. Description MUST quote actual expressions from the transcript with "quotation marks"
+3. Description MUST explain practical usage situations
+4. Be specific and concrete, never generic or abstract
 `;
 
     const result = await model.generateContent(prompt);
