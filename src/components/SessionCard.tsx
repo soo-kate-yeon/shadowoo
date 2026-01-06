@@ -3,8 +3,9 @@ import React from "react";
 interface SessionCardProps {
   thumbnailUrl?: string;
   title: string;
-  totalSentences: number;
-  timeLeft: string;
+  description?: string;
+  totalSentences?: number;
+  timeLeft?: string;
   progress?: number;
   onClick?: () => void;
   isEditMode?: boolean;
@@ -16,9 +17,6 @@ interface SessionCardProps {
 export default function SessionCard({
   thumbnailUrl,
   title,
-  totalSentences,
-  timeLeft,
-  progress,
   onClick,
   isEditMode = false,
   isSelected = false,
@@ -27,15 +25,19 @@ export default function SessionCard({
 }: SessionCardProps) {
   return (
     <div
-      className={`flex items-start gap-4 w-full transition-all ${isEditMode ? "cursor-pointer" : ""}`}
+      className={`group flex gap-4 ${isEditMode ? "cursor-pointer" : ""}`}
       onClick={isEditMode ? onToggleSelection : undefined}
       onMouseEnter={onMouseEnter}
     >
       {/* Edit Checkbox */}
       {isEditMode && (
-        <div className="flex items-center justify-center h-[139px] shrink-0">
+        <div className="flex items-center justify-center shrink-0">
           <div
-            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? "bg-[#ed752a] border-[#ed752a]" : "border-neutral-300 bg-white"}`}
+            className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors"
+            style={{
+              backgroundColor: isSelected ? "#b45000" : "#ffffff",
+              borderColor: isSelected ? "#b45000" : "#dfdedb",
+            }}
           >
             {isSelected && (
               <svg
@@ -58,8 +60,11 @@ export default function SessionCard({
         </div>
       )}
 
-      {/* Thumbnail */}
-      <div className="w-[191px] h-[139px] rounded-xl overflow-hidden shrink-0 relative bg-neutral-200">
+      {/* Thumbnail with Hover Overlay */}
+      <div
+        className="relative w-[160px] h-[90px] rounded-lg overflow-hidden shrink-0"
+        style={{ backgroundColor: "#dfdedb" }}
+      >
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -67,40 +72,46 @@ export default function SessionCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-neutral-400">
+          <div
+            className="w-full h-full flex items-center justify-center text-xs font-medium"
+            style={{ color: "#908f8c" }}
+          >
             No Image
           </div>
         )}
-        <div className="absolute bottom-2 right-2 bg-black/35 backdrop-blur-sm px-2 py-1.5 rounded-md">
-          <span className="text-white text-xs font-medium font-['SF_Pro_Display']">
-            {timeLeft}
-          </span>
-        </div>
+
+        {/* Hover Overlay with Start Button */}
+        {!isEditMode && (
+          <div
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            style={{ backgroundColor: "rgba(12, 11, 9, 0.6)" }}
+            onClick={onClick}
+          >
+            <button
+              className="rounded-lg text-sm font-semibold"
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#ffffff",
+                color: "#0c0b09",
+              }}
+            >
+              시작
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Info Column */}
-      <div className="flex flex-col gap-4 flex-1 min-w-0">
-        {/* Title & Meta */}
-        <div className="flex flex-col items-start w-full">
-          <h3 className="text-lg font-semibold text-black line-clamp-2 leading-tight mb-1 font-['SF_Pro_Display']">
-            {title}
-          </h3>
-          <p className="text-sm font-medium text-[#767676]">
-            {totalSentences}문장 · {timeLeft.split(":")[0]}분
-          </p>
-        </div>
-
-        {/* Action Button */}
-        {!isEditMode && (
-          <button
-            onClick={onClick}
-            className="bg-secondary-100 hover:bg-secondary-300 transition-colors rounded-xl py-2 px-2.5 flex items-center justify-center w-fit"
-          >
-            <span className="text-sm font-medium text-primary-500">
-              계속 학습하기
-            </span>
-          </button>
-        )}
+      <div className="flex flex-col justify-center flex-1 min-w-0 gap-1">
+        <h3
+          className="text-base font-semibold line-clamp-2 leading-snug"
+          style={{ color: "#0c0b09" }}
+        >
+          {title}
+        </h3>
+        <p className="text-sm" style={{ color: "#908f8c" }}>
+          이 영상으로 마저 공부할까요?
+        </p>
       </div>
     </div>
   );
