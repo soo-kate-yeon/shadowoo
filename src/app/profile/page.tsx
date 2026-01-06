@@ -6,7 +6,6 @@ import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
 import TopNav from "@/components/TopNav";
 import { useStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
 import AdminButton from "./AdminButton";
 
 export default function ProfilePage() {
@@ -14,6 +13,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClient();
   const sessions = useStore((state) => state.sessions);
+  const savedSentences = useStore((state) => state.savedSentences);
+  const highlights = useStore((state) => state.highlights);
 
   useEffect(() => {
     const getUser = async () => {
@@ -34,98 +35,173 @@ export default function ProfilePage() {
     router.refresh();
   };
 
-  const activeSessionsCount = Object.keys(sessions).length;
+  const sessionsCount = Object.keys(sessions).length;
+  const savedCount = savedSentences.length + highlights.length;
 
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-secondary-200 flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ backgroundColor: "#faf9f5" }}
+    >
       <TopNav />
-      <main className="flex-1 max-w-[600px] w-full mx-auto p-8 flex flex-col gap-6">
-        <h1 className="text-4xl font-bold text-neutral-900 mb-2">프로필</h1>
-
-        {/* Account Information Section */}
-        <section className="bg-surface rounded-2xl p-6 border border-secondary-300/50">
-          <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-            계정 정보
-          </h2>
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-primary-500 flex items-center justify-center text-white text-2xl font-bold">
-                {user.email?.[0]?.toUpperCase() || "U"}
-              </div>
-              <div className="flex-1">
-                <p className="text-lg font-semibold text-neutral-900">
-                  {user.user_metadata?.full_name ||
-                    user.user_metadata?.name ||
-                    "사용자"}
-                </p>
-                <p className="text-base text-secondary-500">{user.email}</p>
-              </div>
-            </div>
+      <main className="flex-1 max-w-[480px] w-full mx-auto px-5 py-8 flex flex-col gap-5">
+        {/* Profile Header */}
+        <section
+          className="flex items-center gap-4 pb-5 border-b"
+          style={{ borderColor: "#dfdedb" }}
+        >
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-semibold"
+            style={{ backgroundColor: "#f0efeb", color: "#565552" }}
+          >
+            {user.email?.[0]?.toUpperCase() || "U"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-lg font-semibold truncate"
+              style={{ color: "#0c0b09" }}
+            >
+              {user.user_metadata?.full_name ||
+                user.user_metadata?.name ||
+                "사용자"}
+            </p>
+            <p className="text-sm truncate" style={{ color: "#908f8c" }}>
+              {user.email}
+            </p>
           </div>
         </section>
 
-        {/* Learning Statistics Section */}
-        <section className="bg-surface rounded-2xl p-6 border border-secondary-300/50">
-          <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-            학습 현황
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-secondary-50 rounded-xl p-4 border border-secondary-200">
-              <p className="text-sm text-secondary-500 mb-1">학습 중인 영상</p>
-              <p className="text-3xl font-bold text-primary-500">
-                {activeSessionsCount}
-              </p>
-            </div>
-            <div className="bg-secondary-50 rounded-xl p-4 border border-secondary-200">
-              <p className="text-sm text-secondary-500 mb-1">계정 생성일</p>
-              <p className="text-base font-semibold text-neutral-900">
-                {new Date(user.created_at).toLocaleDateString("ko-KR", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-            </div>
+        {/* Stats Section */}
+        <section className="flex gap-3">
+          <div
+            className="flex-1 rounded-xl p-4"
+            style={{ backgroundColor: "#f0efeb" }}
+          >
+            <p
+              className="text-xs font-medium mb-1"
+              style={{ color: "#908f8c", letterSpacing: "0.02em" }}
+            >
+              학습 세션
+            </p>
+            <p className="text-2xl font-bold" style={{ color: "#0c0b09" }}>
+              {sessionsCount}
+            </p>
+          </div>
+          <div
+            className="flex-1 rounded-xl p-4"
+            style={{ backgroundColor: "#f0efeb" }}
+          >
+            <p
+              className="text-xs font-medium mb-1"
+              style={{ color: "#908f8c", letterSpacing: "0.02em" }}
+            >
+              저장한 문장
+            </p>
+            <p className="text-2xl font-bold" style={{ color: "#0c0b09" }}>
+              {savedCount}
+            </p>
           </div>
         </section>
 
-        {/* Plan Information Section */}
-        <section className="bg-surface rounded-2xl p-6 border border-secondary-300/50">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-neutral-900">
-              플랜 정보
-            </h2>
-            <span className="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">
-              Beginner
-            </span>
-          </div>
-          <p className="text-base text-secondary-600 mb-4">
-            기본 학습 기능을 제공하는 무료 플랜입니다.
-          </p>
-          <Button
+        {/* Menu List */}
+        <section
+          className="rounded-xl overflow-hidden border"
+          style={{ backgroundColor: "#ffffff", borderColor: "#dfdedb" }}
+        >
+          {/* Admin Button - conditionally rendered */}
+          {user && <AdminButton userId={user.id} />}
+
+          {/* Subscription Management */}
+          <button
             onClick={() => router.push("/pricing")}
-            className="w-full bg-primary-600 text-white hover:bg-primary-700 font-semibold py-3 rounded-xl transition-colors"
+            className="w-full flex items-center justify-between px-4 py-4 border-b transition-colors hover:bg-[#faf9f5]"
+            style={{ borderColor: "#f0efeb" }}
           >
-            플랜 업그레이드
-          </Button>
-        </section>
+            <div className="flex items-center gap-3">
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#f0efeb" }}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#72716e"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium" style={{ color: "#0c0b09" }}>
+                  구독 관리
+                </p>
+                <p className="text-xs" style={{ color: "#908f8c" }}>
+                  현재 플랜: Free
+                </p>
+              </div>
+            </div>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#b8b7b4"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
 
-        {/* Admin Access Section */}
-        {user && <AdminButton userId={user.id} />}
-
-        {/* Logout Section */}
-        <section className="bg-surface rounded-2xl p-6 border border-secondary-300/50">
-          <h2 className="text-2xl font-semibold text-neutral-900 mb-4">설정</h2>
-          <Button
+          {/* Logout */}
+          <button
             onClick={handleLogout}
-            variant="outline"
-            className="w-full border-2 border-secondary-300 text-secondary-600 hover:bg-secondary-100 font-semibold py-3 rounded-xl transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-4 transition-colors hover:bg-[#faf9f5]"
           >
-            로그아웃
-          </Button>
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "#f0efeb" }}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#72716e"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium" style={{ color: "#565552" }}>
+              로그아웃
+            </p>
+          </button>
         </section>
+
+        {/* Footer Info */}
+        <p
+          className="text-center text-xs mt-auto pt-4"
+          style={{ color: "#b8b7b4" }}
+        >
+          가입일:{" "}
+          {new Date(user.created_at).toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </p>
       </main>
     </div>
   );

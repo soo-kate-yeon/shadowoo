@@ -4,11 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SessionCard from "@/components/SessionCard";
-import UserMenu from "@/components/auth/UserMenu";
 import { useStore } from "@/lib/store";
 import TopNav from "@/components/TopNav";
 import VideoCard from "@/components/VideoCard";
-import { CuratedVideo } from "@/types";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import GuestViewOverlay from "@/components/home/GuestViewOverlay";
 
