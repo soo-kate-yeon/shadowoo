@@ -28,64 +28,46 @@ export async function POST(request: NextRequest) {
     const sentencesText = sentences.map((s: Sentence) => s.text).join(" ");
 
     const prompt = `
-You are an English learning content creator specializing in conversational English. Analyze the following transcript excerpt and generate a title and description for a shadowing learning session.
+You are an English learning content creator. Generate a title and description for a shadowing learning session based on the transcript excerpt.
+
+**Title Format (STRICT):**
+"[영상컨텐츠의 제목 혹은 큰 카테고리]로 배우는 [커뮤니케이션의 목적, 상황]"
 
 **Title Requirements:**
-1. MUST include BOTH elements:
-   - The full video/source context (e.g., movie name, situation)
-   - The specific conversation type or speaking style
-2. Conversation types to identify:
-   - 설득하는 말하기 (persuasive speaking)
-   - 주장/의견 표현 (asserting opinions)
-   - 캐주얼 토크/일상 대화 (casual conversation)
-   - 토론/논쟁 (debate/argument)
-   - 독백/생각 표현 (monologue/expressing thoughts)
-   - 요청/부탁하기 (making requests)
-   - 감정 표현 (expressing emotions)
-3. Be concise but specific - users should understand what they'll learn from the title alone
-4. In Korean language
+- Keep it simple and concise
+- First part: Video source, content type, or category (영화, 팟캐스트, 브이로그, TED Talk 등)
+- Second part: Communication purpose or situation (what the learner will be able to do)
+- Write in Korean
 
-**Title Examples:**
-✅ Good: "악마는 프라다를 입는다: 직장 상사와의 갈등 대화로 배우는 직설적 표현법"
-✅ Good: "TED Talk: 설득력 있게 의견 주장하는 프레젠테이션 말하기"
-✅ Good: "Friends 시트콤: 친구들과의 캐주얼한 농담과 티키타카 대화"
-❌ Bad: "악마는 프라다를 입는다 속 대화를 통해 배우는 일상 대화" (too generic, doesn't specify conversation type)
+**Title Examples (FOLLOW THIS EXACT STYLE):**
+✅ "OpenAI 팟캐스트로 배우는 회사에서 의견 공유하는 법"
+✅ "악마는 프라다를 입는다로 배우는 동료와의 캐주얼 토크"
+✅ "브이로그로 배우는 미국 대학생의 찐친 수다"
+✅ "내가 세련됐다고 생각하는 20가지: 내 취향 영어로 설명하는 법"
+✅ "미드 Friends로 배우는 친구에게 부탁하는 법"
+✅ "인터뷰 클립으로 배우는 자기소개 하는 법"
 
-**Description Requirements:**
-The description MUST be exactly 2-3 sentences in Korean (약 2-3줄):
-1. First sentence: Briefly state what situation/context this conversation is about
-2. Second sentence: Quote SPECIFIC expressions/phrases from the actual script with quotation marks
-3. Third sentence (optional): Explain practical usage situations where learners can apply these expressions
-
-**Description Requirements (CRITICAL):**
-- MUST quote actual words/phrases from the transcript using quotation marks
-- MUST analyze when/where these expressions can be used
-- Focus on actionable learning outcomes
-- Be concrete and specific, NOT abstract or generic
+**Description (STRICT 2 LINES LIMIT):**
+- EXACTLY 2 lines only
+- Line 1: Brief context + what learner will practice
+- Line 2: Highlight specific expressions from the transcript with "~표현에 주목해보세요." ending
+- Use friendly Korean "~요" ending
 
 **Description Examples:**
-✅ Good: "이 대화는 상사가 부하직원에게 불만을 표현하는 장면이에요. "That's all", "You have no style or sense of fashion" 같은 직설적인 비판 표현과 "I don't think I'm like that" 같은 방어적 응답 표현을 배울 수 있어요. 이런 표현들은 직장에서 피드백을 주고받을 때나 의견 차이를 표현할 때 활용할 수 있어요."
-
-✅ Good: "발표자가 청중에게 새로운 관점을 제시하는 프레젠테이션이에요. "What if we could~", "Imagine a world where~" 같은 가정을 통한 설득 표현과 "The key is to~" 같은 핵심 강조 표현을 배울 수 있어요."
-
-❌ Bad: "이 대화는 직장에서의 대화에 대한 내용이에요. 직장 관련 표현을 배울 수 있어요." (no specific quotes, too abstract)
-
-**Tone:** Use friendly, conversational Korean ending with "~요" (존댓말 but casual)
+✅ "악마는 프라다를 입는다 클립으로 직장 동료와의 자연스러운 커뮤니케이션을 배워봐요. \"That's all\", \"I don't think so\" 같은 표현에 주목해보세요."
+✅ "팟캐스트에서 진행자가 의견을 나누는 방식을 따라해 봐요. \"I think~\", \"In my opinion~\" 표현에 주목해보세요."
+✅ "유튜버의 일상 브이로그로 친구처럼 편하게 대화하는 법을 배워봐요. \"You know what?\", \"So basically~\" 표현에 주목해보세요."
 
 Transcript excerpt:
 "${sentencesText}"
 
-Return ONLY a valid JSON object (no markdown formatting) with this structure:
+Return ONLY valid JSON (no markdown):
 {
-  "title": "[영상/출처 맥락]: [구체적인 대화 타입]으로 배우는 [학습 포인트]",
-  "description": "첫 문장: 상황 설명. 두 번째 문장: '실제 스크립트 표현' 인용과 문법/표현 패턴. 세 번째 문장(선택): 활용 상황 분석."
+  "title": "[영상컨텐츠]로 배우는 [커뮤니케이션 목적/상황]",
+  "description": "첫 줄: 상황 설명과 학습 목표. 두 번째 줄: \"표현1\", \"표현2\" 표현에 주목해보세요."
 }
 
-CRITICAL RULES:
-1. Title MUST specify the conversation type (설득/주장/대화/토론/독백/요청/감정표현 etc.)
-2. Description MUST quote actual expressions from the transcript with "quotation marks"
-3. Description MUST explain practical usage situations
-4. Be specific and concrete, never generic or abstract
+CRITICAL: Keep title simple. Description must be EXACTLY 2 lines.
 `;
 
     const result = await model.generateContent(prompt);

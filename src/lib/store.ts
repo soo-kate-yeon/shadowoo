@@ -26,6 +26,7 @@ export interface Session {
 export interface Highlight {
   id: string;
   videoId: string;
+  sentenceId: string;
   originalText: string;
   userNote?: string;
   createdAt: number;
