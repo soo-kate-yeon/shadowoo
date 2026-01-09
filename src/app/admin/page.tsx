@@ -30,7 +30,7 @@ import { useSearchParams } from "next/navigation";
 function AdminPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const editId = searchParams.get("id");
+  const editId = searchParams?.get("id");
 
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
